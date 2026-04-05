@@ -94,10 +94,34 @@ function blockvault_enqueue_editor_assets() {
 
 	// Pass settings to JavaScript.
 	// API key only exposed to admins — other roles use the REST proxy.
+	// Get plan from cached account info.
+	$plan = 'free';
+	$api_key = get_option( 'blockvault_api_key', '' );
+	if ( ! empty( $api_key ) ) {
+		$cached = get_transient( 'blockvault_plan_cache' );
+		if ( false === $cached ) {
+			$api_url  = trailingslashit( get_option( 'blockvault_api_url', 'https://blockvault-api-production.up.railway.app' ) );
+			$response = wp_remote_get( $api_url . 'auth/account', array(
+				'headers' => array( 'X-API-Key' => $api_key ),
+				'timeout' => 5,
+			) );
+			if ( ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) ) {
+				$body = json_decode( wp_remote_retrieve_body( $response ), true );
+				if ( ! empty( $body['plan'] ) ) {
+					$plan = $body['plan'];
+					set_transient( 'blockvault_plan_cache', $plan, HOUR_IN_SECONDS );
+				}
+			}
+		} else {
+			$plan = $cached;
+		}
+	}
+
 	wp_localize_script( 'blockvault-editor', 'blockvaultSettings', array(
-		'apiKey'  => current_user_can( 'manage_options' ) ? get_option( 'blockvault_api_key', '' ) : '',
+		'apiKey'  => current_user_can( 'manage_options' ) ? $api_key : '',
 		'apiUrl'  => get_option( 'blockvault_api_url', 'https://blockvault-api-production.up.railway.app' ),
 		'siteUrl' => site_url(),
+		'plan'    => $plan,
 		'restUrl' => rest_url( 'blockvault/v1/' ),
 		'nonce'   => wp_create_nonce( 'wp_rest' ),
 		'version' => BLOCKVAULT_VERSION,

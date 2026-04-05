@@ -94,6 +94,38 @@ export function getBlockLimit() {
 	return getClient().getBlockLimit();
 }
 
+export function toggleFavorite( id, currentValue ) {
+	return getClient().toggleFavorite( id, currentValue );
+}
+
+export function getCollections() {
+	return getClient().getCollections();
+}
+
+export function createCollection( name ) {
+	return getClient().createCollection( name );
+}
+
+export function deleteCollection( id ) {
+	return getClient().deleteCollection( id );
+}
+
+export function addBlockToCollection( collectionId, blockId ) {
+	return getClient().addBlockToCollection( collectionId, blockId );
+}
+
+export function removeBlockFromCollection( collectionId, blockId ) {
+	return getClient().removeBlockFromCollection( collectionId, blockId );
+}
+
+export function getRevisions( blockId ) {
+	return getClient().getRevisions( blockId );
+}
+
+export function restoreRevision( blockId, revisionId ) {
+	return getClient().restoreRevision( blockId, revisionId );
+}
+
 export function isUsingCloud() {
 	return isCloudMode();
 }

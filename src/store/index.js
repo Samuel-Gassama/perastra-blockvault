@@ -9,6 +9,9 @@ import * as api from '../api/client';
 const DEFAULT_STATE = {
 	blocks: [],
 	blockLimit: 10,
+	plan: 'free',
+	collections: [],
+	collectionFilter: '',
 	loading: false,
 	saving: false,
 	searchTerm: '',
@@ -70,6 +73,26 @@ const store = createReduxStore( STORE_NAME, {
 				return { ...state, sortOrder: action.sortOrder };
 			case 'SET_BLOCK_LIMIT':
 				return { ...state, blockLimit: action.blockLimit };
+			case 'SET_PLAN':
+				return { ...state, plan: action.plan };
+			case 'SET_COLLECTIONS':
+				return { ...state, collections: action.collections };
+			case 'ADD_COLLECTION':
+				return { ...state, collections: [ ...state.collections, action.collection ] };
+			case 'REMOVE_COLLECTION': {
+				const newCollections = state.collections.filter( ( c ) => c.id !== action.id );
+				const cf = state.collectionFilter === action.id ? '' : state.collectionFilter;
+				return { ...state, collections: newCollections, collectionFilter: cf };
+			}
+			case 'SET_COLLECTION_FILTER':
+				return { ...state, collectionFilter: action.collectionFilter };
+			case 'TOGGLE_FAVORITE':
+				return {
+					...state,
+					blocks: state.blocks.map( ( b ) =>
+						b.id === action.id ? { ...b, is_favorite: ! b.is_favorite } : b
+					),
+				};
 			case 'SET_ERROR':
 				return { ...state, error: action.error };
 			default:
@@ -86,15 +109,19 @@ const store = createReduxStore( STORE_NAME, {
 					// Migrate local blocks to cloud on first load after API key is set.
 					await api.migrateLocalToCloud();
 
-					const [ blocks, blockLimit ] = await Promise.all( [
+					const [ blocks, blockLimit, collections ] = await Promise.all( [
 						api.getBlocks(),
 						api.getBlockLimit(),
+						api.getCollections().catch( () => [] ),
 					] );
 					dispatch( { type: 'SET_BLOCKS', blocks } );
-					dispatch( {
-						type: 'SET_BLOCK_LIMIT',
-						blockLimit,
-					} );
+					dispatch( { type: 'SET_BLOCK_LIMIT', blockLimit } );
+					dispatch( { type: 'SET_COLLECTIONS', collections } );
+
+					// Set plan from localized settings.
+					/* global blockvaultSettings */
+					const plan = blockvaultSettings?.plan || 'free';
+					dispatch( { type: 'SET_PLAN', plan } );
 				} catch ( error ) {
 					const message =
 						error?.message ||
@@ -165,6 +192,37 @@ const store = createReduxStore( STORE_NAME, {
 			};
 		},
 
+		toggleFavorite( id ) {
+			return async ( { dispatch } ) => {
+				try {
+					const block = await api.toggleFavorite( id, false );
+					dispatch( { type: 'UPDATE_BLOCK', block } );
+				} catch ( error ) {
+					console.error( 'BlockVault: Failed to toggle favorite', error );
+					throw error;
+				}
+			};
+		},
+
+		createCollection( name ) {
+			return async ( { dispatch } ) => {
+				const collection = await api.createCollection( name );
+				dispatch( { type: 'ADD_COLLECTION', collection } );
+				return collection;
+			};
+		},
+
+		deleteCollection( id ) {
+			return async ( { dispatch } ) => {
+				await api.deleteCollection( id );
+				dispatch( { type: 'REMOVE_COLLECTION', id } );
+			};
+		},
+
+		setCollectionFilter( collectionFilter ) {
+			return { type: 'SET_COLLECTION_FILTER', collectionFilter };
+		},
+
 		setSearchTerm( searchTerm ) {
 			return { type: 'SET_SEARCH_TERM', searchTerm };
 		},
@@ -185,7 +243,7 @@ const store = createReduxStore( STORE_NAME, {
 
 		getFilteredBlocks( state ) {
 			let { blocks } = state;
-			const { searchTerm, categoryFilter, sortOrder } = state;
+			const { searchTerm, categoryFilter, sortOrder, collectionFilter } = state;
 
 			if ( searchTerm ) {
 				const term = searchTerm.toLowerCase();
@@ -233,10 +291,17 @@ const store = createReduxStore( STORE_NAME, {
 					break;
 			}
 
-			return blocks;
-		},
+			// Favorites sort to the top.
+				blocks.sort( ( a, b ) => {
+					if ( a.is_favorite && ! b.is_favorite ) return -1;
+					if ( ! a.is_favorite && b.is_favorite ) return 1;
+					return 0;
+				} );
 
-		getCategories( state ) {
+				return blocks;
+			},
+
+			getCategories( state ) {
 			const cats = [
 				...new Set(
 					state.blocks
@@ -284,6 +349,22 @@ const store = createReduxStore( STORE_NAME, {
 				state.blockLimit !== Infinity &&
 				state.blocks.length >= state.blockLimit
 			);
+		},
+
+		getPlan( state ) {
+			return ( state.plan || 'free' ).replace( 'lifetime_', '' );
+		},
+
+		isPaidPlan( state ) {
+			return ( state.plan || 'free' ).replace( 'lifetime_', '' ) !== 'free';
+		},
+
+		getCollections( state ) {
+			return state.collections;
+		},
+
+		getCollectionFilter( state ) {
+			return state.collectionFilter;
 		},
 
 		getError( state ) {

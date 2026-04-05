@@ -136,6 +136,29 @@
 		flex-shrink: 0;
 	}
 
+	&__favorite {
+		background: none;
+		border: none;
+		cursor: pointer;
+		font-size: 16px;
+		color: var(--wp-components-color-gray-400, #bbb);
+		padding: 0;
+		margin-left: auto;
+		flex-shrink: 0;
+		transition: color 0.15s;
+
+		&:hover { color: #f59e0b; }
+		&.is-active { color: #f59e0b; }
+	}
+
+	&__description {
+		font-size: 11px;
+		font-style: italic;
+		color: var(--wp-components-color-foreground-subtle, #757575);
+		margin-bottom: 4px;
+		line-height: 1.4;
+	}
+
 	&__name {
 		font-weight: 600;
 		font-size: 13px;

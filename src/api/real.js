@@ -134,10 +134,63 @@ export async function saveBlock( { name, markup, category = '' } ) {
 	} );
 }
 
-export async function updateBlock( id, { name, category } ) {
+export async function updateBlock( id, data ) {
+	const body = {};
+	if ( data.name !== undefined ) body.name = data.name;
+	if ( data.category !== undefined ) body.category = data.category;
+	if ( data.description !== undefined ) body.description = data.description;
+	if ( data.is_favorite !== undefined ) body.is_favorite = data.is_favorite;
 	return apiFetch( `${ getBaseUrl() }/blocks/${ id }`, {
 		method: 'PATCH',
-		body: JSON.stringify( { name, category } ),
+		body: JSON.stringify( body ),
+	} );
+}
+
+export async function toggleFavorite( id, currentValue ) {
+	return updateBlock( id, { is_favorite: ! currentValue } );
+}
+
+// ── Collections ──────────────────────────────────────
+
+export async function getCollections() {
+	return apiFetch( `${ getBaseUrl() }/collections` );
+}
+
+export async function createCollection( name ) {
+	return apiFetch( `${ getBaseUrl() }/collections`, {
+		method: 'POST',
+		body: JSON.stringify( { name } ),
+	} );
+}
+
+export async function deleteCollection( id ) {
+	return apiFetch( `${ getBaseUrl() }/collections/${ id }`, {
+		method: 'DELETE',
+	} );
+}
+
+export async function addBlockToCollection( collectionId, blockId ) {
+	return apiFetch( `${ getBaseUrl() }/collections/${ collectionId }/blocks`, {
+		method: 'POST',
+		body: JSON.stringify( { block_id: blockId } ),
+	} );
+}
+
+export async function removeBlockFromCollection( collectionId, blockId ) {
+	return apiFetch( `${ getBaseUrl() }/collections/${ collectionId }/blocks/${ blockId }`, {
+		method: 'DELETE',
+	} );
+}
+
+// ── Revisions ────────────────────────────────────────
+
+export async function getRevisions( blockId ) {
+	return apiFetch( `${ getBaseUrl() }/revisions/${ blockId }` );
+}
+
+export async function restoreRevision( blockId, revisionId ) {
+	return apiFetch( `${ getBaseUrl() }/revisions/${ blockId }/${ revisionId }/restore`, {
+		method: 'POST',
 	} );
 }
 

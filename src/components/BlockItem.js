@@ -4,7 +4,7 @@
 
 import { useState, memo } from '@wordpress/element';
 import { Button, Flex, FlexBlock, FlexItem } from '@wordpress/components';
-import { useDispatch } from '@wordpress/data';
+import { useDispatch, useSelect } from '@wordpress/data';
 import { parse } from '@wordpress/blocks';
 import { store as blockEditorStore } from '@wordpress/block-editor';
 import { store as noticesStore } from '@wordpress/notices';
@@ -38,9 +38,11 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 	const [ editCategory, setEditCategory ] = useState( '' );
 
 	const { insertBlocks } = useDispatch( blockEditorStore );
-	const { deleteBlock, updateBlock } = useDispatch( STORE_NAME );
-	const { createSuccessNotice, createErrorNotice } =
+	const { deleteBlock, updateBlock, toggleFavorite } = useDispatch( STORE_NAME );
+	const { createSuccessNotice, createErrorNotice, createWarningNotice } =
 		useDispatch( noticesStore );
+
+	const plan = useSelect( ( sel ) => sel( STORE_NAME ).getPlan() );
 
 	const [ flash, setFlash ] = useState( false );
 
@@ -101,19 +103,41 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 
 	const preview = getMarkupPreview( block.markup );
 
+	const handleFavorite = async () => {
+		if ( plan === 'free' ) {
+			createWarningNotice(
+				__( 'Favorites require a Solo plan or higher.', 'blockvault' ),
+				{ type: 'snackbar' }
+			);
+			return;
+		}
+		try {
+			await toggleFavorite( block.id );
+		} catch {
+			createErrorNotice( __( 'Failed to update favorite.', 'blockvault' ), { type: 'snackbar' } );
+		}
+	};
+
+	const [ editDescription, setEditDescription ] = useState( '' );
+
 	const handleEdit = () => {
 		setEditName( block.name );
 		setEditCategory( block.category || '' );
+		setEditDescription( block.description || '' );
 		setEditing( true );
 	};
 
 	const handleEditSave = async () => {
 		if ( ! editName.trim() ) return;
 		try {
-			await updateBlock( block.id, {
+			const data = {
 				name: editName.trim(),
 				category: editCategory.trim(),
-			} );
+			};
+			if ( plan !== 'free' ) {
+				data.description = editDescription.trim();
+			}
+			await updateBlock( block.id, data );
 			createSuccessNotice(
 				__( 'Block updated.', 'blockvault' ),
 				{ type: 'snackbar' }
@@ -158,6 +182,15 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 						placeholder={ __( 'Category (optional)', 'blockvault' ) }
 						onKeyDown={ ( e ) => { if ( e.key === 'Enter' ) handleEditSave(); if ( e.key === 'Escape' ) handleEditCancel(); } }
 					/>
+					<input
+						type="text"
+						className="blockvault-block-item__edit-input"
+						value={ editDescription }
+						onChange={ ( e ) => setEditDescription( e.target.value ) }
+						placeholder={ plan === 'free' ? __( 'Notes (Solo+ plan)', 'blockvault' ) : __( 'Notes (optional)', 'blockvault' ) }
+						disabled={ plan === 'free' }
+						onKeyDown={ ( e ) => { if ( e.key === 'Enter' ) handleEditSave(); if ( e.key === 'Escape' ) handleEditCancel(); } }
+					/>
 					<Flex gap={ 1 }>
 						<Button variant="primary" size="small" onClick={ handleEditSave }>
 							{ __( 'Save', 'blockvault' ) }
@@ -187,7 +220,20 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 						<div className="blockvault-block-item__name">
 							{ block.name }
 						</div>
+						<button
+							type="button"
+							className={ `blockvault-block-item__favorite${ block.is_favorite ? ' is-active' : '' }` }
+							onClick={ handleFavorite }
+							title={ block.is_favorite ? __( 'Unpin', 'blockvault' ) : __( 'Pin to top', 'blockvault' ) }
+						>
+							{ block.is_favorite ? '\u2605' : '\u2606' }
+						</button>
 					</div>
+					{ block.description && (
+						<div className="blockvault-block-item__description">
+							{ block.description }
+						</div>
+					) }
 					<div className="blockvault-block-item__meta">
 						<span>
 							{ block.block_count }{ ' ' }

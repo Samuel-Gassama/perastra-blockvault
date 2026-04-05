@@ -91,6 +91,8 @@ export async function saveBlock( { name, markup, category = '' } ) {
 		name,
 		markup,
 		category,
+		description: '',
+		is_favorite: false,
 		block_count: ( markup.match( /<!-- wp:/g ) || [] ).length,
 		created_at: new Date().toISOString(),
 	};
@@ -99,18 +101,31 @@ export async function saveBlock( { name, markup, category = '' } ) {
 	return newBlock;
 }
 
-export async function updateBlock( id, { name, category } ) {
+export async function updateBlock( id, data ) {
 	await delay( 200 );
 	const blocks = getStoredBlocks();
 	const index = blocks.findIndex( ( b ) => b.id === id );
 	if ( index === -1 ) {
 		throw new Error( __( 'Block not found.', 'blockvault' ) );
 	}
-	if ( name !== undefined ) blocks[ index ].name = name.trim();
-	if ( category !== undefined ) blocks[ index ].category = ( category || '' ).trim();
+	if ( data.name !== undefined ) blocks[ index ].name = data.name.trim();
+	if ( data.category !== undefined ) blocks[ index ].category = ( data.category || '' ).trim();
+	// Notes and favorites are paid features — silently ignore in local mode.
 	setStoredBlocks( blocks );
 	return blocks[ index ];
 }
+
+export async function toggleFavorite() {
+	throw new Error( __( 'Favorites require a paid plan.', 'blockvault' ) );
+}
+
+export async function getCollections() { return []; }
+export async function createCollection() { throw new Error( __( 'Collections require a paid plan.', 'blockvault' ) ); }
+export async function deleteCollection() { throw new Error( __( 'Collections require a paid plan.', 'blockvault' ) ); }
+export async function addBlockToCollection() { throw new Error( __( 'Collections require a paid plan.', 'blockvault' ) ); }
+export async function removeBlockFromCollection() { throw new Error( __( 'Collections require a paid plan.', 'blockvault' ) ); }
+export async function getRevisions() { return []; }
+export async function restoreRevision() { throw new Error( __( 'Revision history requires the Agency plan.', 'blockvault' ) ); }
 
 export async function deleteBlock( id ) {
 	await delay( 150 );
