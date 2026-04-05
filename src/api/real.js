@@ -134,6 +134,13 @@ export async function saveBlock( { name, markup, category = '' } ) {
 	} );
 }
 
+export async function updateBlock( id, { name, category } ) {
+	return apiFetch( `${ getBaseUrl() }/blocks/${ id }`, {
+		method: 'PATCH',
+		body: JSON.stringify( { name, category } ),
+	} );
+}
+
 export async function deleteBlock( id ) {
 	return apiFetch( `${ getBaseUrl() }/blocks/${ id }`, {
 		method: 'DELETE',

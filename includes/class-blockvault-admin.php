@@ -16,6 +16,9 @@ class BlockVault_Admin {
 		add_action( 'admin_menu', array( __CLASS__, 'add_menu' ) );
 		add_action( 'admin_init', array( __CLASS__, 'register_settings' ) );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_admin_styles' ) );
+		add_action( 'wp_ajax_blockvault_register', array( __CLASS__, 'ajax_register' ) );
+		add_action( 'wp_ajax_blockvault_disconnect', array( __CLASS__, 'ajax_disconnect' ) );
+		add_action( 'wp_ajax_blockvault_login', array( __CLASS__, 'ajax_login' ) );
 	}
 
 	public static function add_menu() {
@@ -192,17 +195,23 @@ class BlockVault_Admin {
 								<label for="blockvault_api_key"><?php esc_html_e( 'API Key', 'blockvault' ); ?></label>
 							</th>
 							<td>
-								<input type="text" id="blockvault_api_key" name="blockvault_api_key"
-									value="<?php echo esc_attr( $api_key ); ?>"
-									class="regular-text" placeholder="bv_xxxxxxxxxxxxxxxx" />
+								<div class="blockvault-admin__key-field">
+									<input type="text" id="blockvault_api_key" name="blockvault_api_key"
+										value="<?php echo esc_attr( $api_key ); ?>"
+										class="regular-text blockvault-admin__key-input"
+										placeholder="bv_xxxxxxxxxxxxxxxx"
+										/>
+									<button type="button" class="button blockvault-admin__toggle-key" title="<?php esc_attr_e( 'Show/Hide API Key', 'blockvault' ); ?>">
+										<span class="dashicons dashicons-visibility"></span>
+									</button>
+									<?php if ( ! empty( $api_key ) ) : ?>
+										<button type="button" class="button blockvault-admin__copy-key" title="<?php esc_attr_e( 'Copy API Key', 'blockvault' ); ?>">
+											<span class="dashicons dashicons-clipboard"></span>
+										</button>
+									<?php endif; ?>
+								</div>
 								<p class="description">
-									<?php
-									printf(
-										/* translators: %s: link to account page */
-										esc_html__( 'Get your API key from %s', 'blockvault' ),
-										'<a href="' . esc_url( self::SITE_URL . '/account' ) . '" target="_blank" rel="noopener noreferrer">block-vault.com/account</a>'
-									);
-									?>
+									<?php esc_html_e( 'Already have an API key? Paste it above.', 'blockvault' ); ?>
 								</p>
 							</td>
 						</tr>
@@ -211,9 +220,73 @@ class BlockVault_Admin {
 					<!-- API URL is hidden — only overridable via wp_options for advanced users -->
 					<input type="hidden" name="blockvault_api_url" value="<?php echo esc_attr( $api_url ); ?>" />
 
-					<?php submit_button( __( 'Save Settings', 'blockvault' ) ); ?>
+					<div class="blockvault-admin__actions">
+						<?php submit_button( __( 'Save Settings', 'blockvault' ), 'primary', 'submit', false ); ?>
+						<?php if ( $connected ) : ?>
+							<button type="button" class="button blockvault-admin__disconnect">
+								<span class="dashicons dashicons-no"></span>
+								<?php esc_html_e( 'Disconnect', 'blockvault' ); ?>
+							</button>
+						<?php endif; ?>
+					</div>
 				</form>
 			</div>
+
+			<?php if ( ! $connected ) : ?>
+				<!-- REGISTER / LOGIN FORM -->
+				<div class="blockvault-admin__card blockvault-admin__register">
+					<div class="blockvault-admin__auth-tabs">
+						<button type="button" class="blockvault-admin__auth-tab active" data-tab="register">
+							<?php esc_html_e( 'Create Account', 'blockvault' ); ?>
+						</button>
+						<button type="button" class="blockvault-admin__auth-tab" data-tab="login">
+							<?php esc_html_e( 'Log In', 'blockvault' ); ?>
+						</button>
+					</div>
+
+					<!-- Register Tab -->
+					<div class="blockvault-admin__auth-panel active" data-panel="register">
+						<p class="blockvault-admin__subtitle"><?php esc_html_e( 'Get your API key instantly. No credit card required.', 'blockvault' ); ?></p>
+						<div class="blockvault-admin__register-form">
+							<div class="blockvault-admin__register-field">
+								<label for="bv-register-email"><?php esc_html_e( 'Email', 'blockvault' ); ?></label>
+								<input type="email" id="bv-register-email" placeholder="you@example.com" class="regular-text" />
+							</div>
+							<div class="blockvault-admin__register-field">
+								<label for="bv-register-password"><?php esc_html_e( 'Password', 'blockvault' ); ?></label>
+								<input type="password" id="bv-register-password" placeholder="<?php esc_attr_e( 'Min. 8 characters', 'blockvault' ); ?>" class="regular-text" />
+							</div>
+							<button type="button" class="button button-primary blockvault-admin__register-btn">
+								<?php esc_html_e( 'Create Account & Get API Key', 'blockvault' ); ?>
+							</button>
+							<div class="blockvault-admin__register-result" style="display:none;"></div>
+						</div>
+					</div>
+
+					<!-- Login Tab -->
+					<div class="blockvault-admin__auth-panel" data-panel="login">
+						<p class="blockvault-admin__subtitle"><?php esc_html_e( 'Already have an account? Log in to retrieve your API key.', 'blockvault' ); ?></p>
+						<div class="blockvault-admin__register-form">
+							<div class="blockvault-admin__register-field">
+								<label for="bv-login-email"><?php esc_html_e( 'Email', 'blockvault' ); ?></label>
+								<input type="email" id="bv-login-email" placeholder="you@example.com" class="regular-text" />
+							</div>
+							<div class="blockvault-admin__register-field">
+								<label for="bv-login-password"><?php esc_html_e( 'Password', 'blockvault' ); ?></label>
+								<input type="password" id="bv-login-password" class="regular-text" />
+							</div>
+							<button type="button" class="button button-primary blockvault-admin__login-btn">
+								<?php esc_html_e( 'Log In & Get API Key', 'blockvault' ); ?>
+							</button>
+							<div class="blockvault-admin__login-result" style="display:none;"></div>
+						</div>
+					</div>
+
+					<p class="blockvault-admin__register-note">
+						<?php esc_html_e( 'Your API key will be automatically saved to the settings above.', 'blockvault' ); ?>
+					</p>
+				</div>
+			<?php endif; ?>
 
 			<!-- FOOTER LINKS -->
 			<div class="blockvault-admin__footer">
@@ -226,7 +299,250 @@ class BlockVault_Admin {
 				<a href="<?php echo esc_url( self::SITE_URL . '/pricing' ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Pricing', 'blockvault' ); ?></a>
 			</div>
 		</div>
+
+		<script>
+		(function() {
+			// Toggle API key visibility (CSS masking, not type=password)
+			var toggleBtn = document.querySelector('.blockvault-admin__toggle-key');
+			var keyInput = document.getElementById('blockvault_api_key');
+			if (toggleBtn && keyInput) {
+				// Mask by default if key exists
+				if (keyInput.value) keyInput.classList.add('is-masked');
+				toggleBtn.addEventListener('click', function() {
+					var icon = toggleBtn.querySelector('.dashicons');
+					if (keyInput.classList.contains('is-masked')) {
+						keyInput.classList.remove('is-masked');
+						icon.className = 'dashicons dashicons-hidden';
+					} else {
+						keyInput.classList.add('is-masked');
+						icon.className = 'dashicons dashicons-visibility';
+					}
+				});
+			}
+
+			// Copy API key
+			var copyBtn = document.querySelector('.blockvault-admin__copy-key');
+			if (copyBtn) {
+				copyBtn.addEventListener('click', function() {
+					var input = document.getElementById('blockvault_api_key');
+					navigator.clipboard.writeText(input.value).then(function() {
+						var icon = copyBtn.querySelector('.dashicons');
+						icon.className = 'dashicons dashicons-yes';
+						setTimeout(function() { icon.className = 'dashicons dashicons-clipboard'; }, 1500);
+					});
+				});
+			}
+
+			// Disconnect
+			var disconnectBtn = document.querySelector('.blockvault-admin__disconnect');
+			if (disconnectBtn) {
+				disconnectBtn.addEventListener('click', function() {
+					if (!confirm('<?php echo esc_js( __( 'Disconnect this site from your BlockVault account? Your cloud blocks will not be deleted.', 'blockvault' ) ); ?>')) return;
+					fetch(ajaxurl, {
+						method: 'POST',
+						headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+						body: 'action=blockvault_disconnect&_wpnonce=<?php echo esc_js( wp_create_nonce( 'blockvault_disconnect' ) ); ?>'
+					}).then(function(r) { return r.json(); }).then(function() {
+						window.location.reload();
+					});
+				});
+			}
+
+			// Auth tabs
+			document.querySelectorAll('.blockvault-admin__auth-tab').forEach(function(tab) {
+				tab.addEventListener('click', function() {
+					document.querySelectorAll('.blockvault-admin__auth-tab').forEach(function(t) { t.classList.remove('active'); });
+					document.querySelectorAll('.blockvault-admin__auth-panel').forEach(function(p) { p.classList.remove('active'); });
+					tab.classList.add('active');
+					document.querySelector('[data-panel="' + tab.dataset.tab + '"]').classList.add('active');
+				});
+			});
+
+			// Login
+			var loginBtn = document.querySelector('.blockvault-admin__login-btn');
+			if (loginBtn) {
+				loginBtn.addEventListener('click', function() {
+					var email = document.getElementById('bv-login-email').value.trim();
+					var pass = document.getElementById('bv-login-password').value;
+					var result = document.querySelector('.blockvault-admin__login-result');
+					if (!email || !pass) { result.style.display='block'; result.className='blockvault-admin__login-result notice notice-error'; result.textContent='<?php echo esc_js( __( 'Email and password are required.', 'blockvault' ) ); ?>'; return; }
+					loginBtn.disabled = true;
+					loginBtn.textContent = '<?php echo esc_js( __( 'Logging in...', 'blockvault' ) ); ?>';
+					fetch(ajaxurl, {
+						method: 'POST',
+						headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+						body: 'action=blockvault_login&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(pass) + '&_wpnonce=<?php echo esc_js( wp_create_nonce( 'blockvault_login' ) ); ?>'
+					}).then(function(r) { return r.json(); }).then(function(data) {
+						if (data.success) {
+							result.style.display='block';
+							result.className='blockvault-admin__login-result notice notice-success';
+							result.textContent='<?php echo esc_js( __( 'Logged in! API key saved. Reloading...', 'blockvault' ) ); ?>';
+							setTimeout(function() { window.location.reload(); }, 1500);
+						} else {
+							result.style.display='block';
+							result.className='blockvault-admin__login-result notice notice-error';
+							result.textContent = data.data || '<?php echo esc_js( __( 'Invalid email or password.', 'blockvault' ) ); ?>';
+							loginBtn.disabled = false;
+							loginBtn.textContent = '<?php echo esc_js( __( 'Log In & Get API Key', 'blockvault' ) ); ?>';
+						}
+					}).catch(function() {
+						result.style.display='block';
+						result.className='blockvault-admin__login-result notice notice-error';
+						result.textContent='<?php echo esc_js( __( 'Connection error. Try again.', 'blockvault' ) ); ?>';
+						loginBtn.disabled = false;
+						loginBtn.textContent = '<?php echo esc_js( __( 'Log In & Get API Key', 'blockvault' ) ); ?>';
+					});
+				});
+			}
+
+			// Register
+			var registerBtn = document.querySelector('.blockvault-admin__register-btn');
+			if (registerBtn) {
+				registerBtn.addEventListener('click', function() {
+					var email = document.getElementById('bv-register-email').value.trim();
+					var pass = document.getElementById('bv-register-password').value;
+					var result = document.querySelector('.blockvault-admin__register-result');
+					if (!email || !pass) { result.style.display='block'; result.className='blockvault-admin__register-result notice notice-error'; result.textContent='<?php echo esc_js( __( 'Email and password are required.', 'blockvault' ) ); ?>'; return; }
+					if (pass.length < 8) { result.style.display='block'; result.className='blockvault-admin__register-result notice notice-error'; result.textContent='<?php echo esc_js( __( 'Password must be at least 8 characters.', 'blockvault' ) ); ?>'; return; }
+					registerBtn.disabled = true;
+					registerBtn.textContent = '<?php echo esc_js( __( 'Creating account...', 'blockvault' ) ); ?>';
+					fetch(ajaxurl, {
+						method: 'POST',
+						headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+						body: 'action=blockvault_register&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(pass) + '&_wpnonce=<?php echo esc_js( wp_create_nonce( 'blockvault_register' ) ); ?>'
+					}).then(function(r) { return r.json(); }).then(function(data) {
+						if (data.success) {
+							result.style.display='block';
+							result.className='blockvault-admin__register-result notice notice-success';
+							result.textContent='<?php echo esc_js( __( 'Account created! API key saved. Reloading...', 'blockvault' ) ); ?>';
+							setTimeout(function() { window.location.reload(); }, 1500);
+						} else {
+							result.style.display='block';
+							result.className='blockvault-admin__register-result notice notice-error';
+							result.textContent = data.data || '<?php echo esc_js( __( 'Registration failed. Try again.', 'blockvault' ) ); ?>';
+							registerBtn.disabled = false;
+							registerBtn.textContent = '<?php echo esc_js( __( 'Create Account & Get API Key', 'blockvault' ) ); ?>';
+						}
+					}).catch(function() {
+						result.style.display='block';
+						result.className='blockvault-admin__register-result notice notice-error';
+						result.textContent='<?php echo esc_js( __( 'Connection error. Try again.', 'blockvault' ) ); ?>';
+						registerBtn.disabled = false;
+						registerBtn.textContent = '<?php echo esc_js( __( 'Create Account & Get API Key', 'blockvault' ) ); ?>';
+					});
+				});
+			}
+		})();
+		</script>
 		<?php
+	}
+
+	/**
+	 * AJAX: Register a new account via the cloud API.
+	 */
+	public static function ajax_register() {
+		check_ajax_referer( 'blockvault_register' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( __( 'Permission denied.', 'blockvault' ) );
+		}
+
+		$email    = sanitize_email( $_POST['email'] ?? '' );
+		$password = $_POST['password'] ?? '';
+
+		if ( empty( $email ) || empty( $password ) ) {
+			wp_send_json_error( __( 'Email and password are required.', 'blockvault' ) );
+		}
+
+		$api_url = trailingslashit( get_option( 'blockvault_api_url', self::API_URL_DEFAULT ) );
+
+		$response = wp_remote_post( $api_url . 'auth/register', array(
+			'headers' => array( 'Content-Type' => 'application/json' ),
+			'body'    => wp_json_encode( array(
+				'email'    => $email,
+				'password' => $password,
+			) ),
+			'timeout' => 15,
+		) );
+
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error( __( 'Could not connect to BlockVault. Try again later.', 'blockvault' ) );
+		}
+
+		$status = wp_remote_retrieve_response_code( $response );
+		$body   = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( $status !== 201 && $status !== 200 ) {
+			$message = $body['message'] ?? __( 'Registration failed.', 'blockvault' );
+			wp_send_json_error( $message );
+		}
+
+		if ( ! empty( $body['api_key'] ) ) {
+			update_option( 'blockvault_api_key', sanitize_text_field( $body['api_key'] ) );
+		}
+
+		wp_send_json_success( $body );
+	}
+
+	/**
+	 * AJAX: Disconnect — clears the API key from settings.
+	 */
+	public static function ajax_disconnect() {
+		check_ajax_referer( 'blockvault_disconnect' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( __( 'Permission denied.', 'blockvault' ) );
+		}
+
+		update_option( 'blockvault_api_key', '' );
+		wp_send_json_success();
+	}
+
+	/**
+	 * AJAX: Log in to an existing account and retrieve the API key.
+	 */
+	public static function ajax_login() {
+		check_ajax_referer( 'blockvault_login' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( __( 'Permission denied.', 'blockvault' ) );
+		}
+
+		$email    = sanitize_email( $_POST['email'] ?? '' );
+		$password = $_POST['password'] ?? '';
+
+		if ( empty( $email ) || empty( $password ) ) {
+			wp_send_json_error( __( 'Email and password are required.', 'blockvault' ) );
+		}
+
+		$api_url = trailingslashit( get_option( 'blockvault_api_url', self::API_URL_DEFAULT ) );
+
+		$response = wp_remote_post( $api_url . 'auth/login', array(
+			'headers' => array( 'Content-Type' => 'application/json' ),
+			'body'    => wp_json_encode( array(
+				'email'    => $email,
+				'password' => $password,
+			) ),
+			'timeout' => 15,
+		) );
+
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error( __( 'Could not connect to BlockVault. Try again later.', 'blockvault' ) );
+		}
+
+		$status = wp_remote_retrieve_response_code( $response );
+		$body   = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( $status !== 200 ) {
+			$message = $body['message'] ?? __( 'Invalid email or password.', 'blockvault' );
+			wp_send_json_error( $message );
+		}
+
+		if ( ! empty( $body['api_key'] ) ) {
+			update_option( 'blockvault_api_key', sanitize_text_field( $body['api_key'] ) );
+		}
+
+		wp_send_json_success( $body );
 	}
 
 	/**
@@ -440,6 +756,101 @@ class BlockVault_Admin {
 		}
 		.blockvault-admin__footer span {
 			color: #c3c4c7;
+		}
+		.blockvault-admin__key-field {
+			display: flex;
+			gap: 4px;
+			align-items: center;
+		}
+		.blockvault-admin__key-field .regular-text {
+			flex: 1;
+			max-width: 350px;
+		}
+		.blockvault-admin__key-input.is-masked {
+			-webkit-text-security: disc;
+			text-security: disc;
+		}
+		.blockvault-admin__toggle-key .dashicons,
+		.blockvault-admin__copy-key .dashicons {
+			margin-top: 4px;
+		}
+		.blockvault-admin__actions {
+			display: flex;
+			gap: 8px;
+			align-items: center;
+			margin-top: 12px;
+		}
+		.blockvault-admin__disconnect {
+			color: #d63638 !important;
+			border-color: #d63638 !important;
+		}
+		.blockvault-admin__disconnect:hover {
+			background: #d63638 !important;
+			color: #fff !important;
+		}
+		.blockvault-admin__disconnect .dashicons {
+			font-size: 16px;
+			width: 16px;
+			height: 16px;
+			margin-top: 4px;
+			margin-right: 2px;
+		}
+		.blockvault-admin__register {
+			border-left: 4px solid #2271b1;
+		}
+		.blockvault-admin__auth-tabs {
+			display: flex;
+			gap: 0;
+			margin-bottom: 16px;
+			border-bottom: 2px solid #e0e0e0;
+		}
+		.blockvault-admin__auth-tab {
+			background: none;
+			border: none;
+			padding: 10px 20px;
+			font-size: 14px;
+			font-weight: 600;
+			color: #646970;
+			cursor: pointer;
+			border-bottom: 2px solid transparent;
+			margin-bottom: -2px;
+		}
+		.blockvault-admin__auth-tab.active {
+			color: #2271b1;
+			border-bottom-color: #2271b1;
+		}
+		.blockvault-admin__auth-tab:hover {
+			color: #135e96;
+		}
+		.blockvault-admin__auth-panel {
+			display: none;
+		}
+		.blockvault-admin__auth-panel.active {
+			display: block;
+		}
+		.blockvault-admin__register-form {
+			max-width: 400px;
+			display: flex;
+			flex-direction: column;
+			gap: 12px;
+			margin: 16px 0;
+		}
+		.blockvault-admin__register-field label {
+			display: block;
+			font-weight: 600;
+			margin-bottom: 4px;
+		}
+		.blockvault-admin__register-field .regular-text {
+			width: 100%;
+		}
+		.blockvault-admin__register-result {
+			padding: 8px 12px;
+			margin: 0;
+		}
+		.blockvault-admin__register-note {
+			color: #646970;
+			font-style: italic;
+			font-size: 13px;
 		}
 		';
 	}

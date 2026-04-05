@@ -33,11 +33,16 @@ function getMarkupPreview( markup ) {
 const BlockItem = memo( function BlockItem( { block, selectable, selected, onToggleSelect, onDuplicate } ) {
 	const [ confirming, setConfirming ] = useState( false );
 	const [ expanded, setExpanded ] = useState( false );
+	const [ editing, setEditing ] = useState( false );
+	const [ editName, setEditName ] = useState( '' );
+	const [ editCategory, setEditCategory ] = useState( '' );
 
 	const { insertBlocks } = useDispatch( blockEditorStore );
-	const { deleteBlock } = useDispatch( STORE_NAME );
+	const { deleteBlock, updateBlock } = useDispatch( STORE_NAME );
 	const { createSuccessNotice, createErrorNotice } =
 		useDispatch( noticesStore );
+
+	const [ flash, setFlash ] = useState( false );
 
 	const handleInsert = () => {
 		try {
@@ -53,8 +58,9 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 				return;
 			}
 			insertBlocks( parsed );
+			setFlash( true );
+			setTimeout( () => setFlash( false ), 900 );
 			createSuccessNotice(
-				/* translators: %s: block name */
 				`"${ block.name }" ${ __( 'inserted.', 'blockvault' ) }`,
 				{ type: 'snackbar' }
 			);
@@ -95,14 +101,78 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 
 	const preview = getMarkupPreview( block.markup );
 
+	const handleEdit = () => {
+		setEditName( block.name );
+		setEditCategory( block.category || '' );
+		setEditing( true );
+	};
+
+	const handleEditSave = async () => {
+		if ( ! editName.trim() ) return;
+		try {
+			await updateBlock( block.id, {
+				name: editName.trim(),
+				category: editCategory.trim(),
+			} );
+			createSuccessNotice(
+				__( 'Block updated.', 'blockvault' ),
+				{ type: 'snackbar' }
+			);
+			setEditing( false );
+		} catch {
+			createErrorNotice(
+				__( 'Failed to update block.', 'blockvault' ),
+				{ type: 'snackbar' }
+			);
+		}
+	};
+
+	const handleEditCancel = () => {
+		setEditing( false );
+	};
+
 	const handleDuplicate = () => {
 		if ( onDuplicate ) {
 			onDuplicate( block );
 		}
 	};
 
+	if ( editing ) {
+		return (
+			<div className="blockvault-block-item blockvault-block-item--editing">
+				<div className="blockvault-block-item__edit-form">
+					<input
+						type="text"
+						className="blockvault-block-item__edit-input"
+						value={ editName }
+						onChange={ ( e ) => setEditName( e.target.value ) }
+						placeholder={ __( 'Block name', 'blockvault' ) }
+						autoFocus
+						onKeyDown={ ( e ) => { if ( e.key === 'Enter' ) handleEditSave(); if ( e.key === 'Escape' ) handleEditCancel(); } }
+					/>
+					<input
+						type="text"
+						className="blockvault-block-item__edit-input"
+						value={ editCategory }
+						onChange={ ( e ) => setEditCategory( e.target.value ) }
+						placeholder={ __( 'Category (optional)', 'blockvault' ) }
+						onKeyDown={ ( e ) => { if ( e.key === 'Enter' ) handleEditSave(); if ( e.key === 'Escape' ) handleEditCancel(); } }
+					/>
+					<Flex gap={ 1 }>
+						<Button variant="primary" size="small" onClick={ handleEditSave }>
+							{ __( 'Save', 'blockvault' ) }
+						</Button>
+						<Button variant="tertiary" size="small" onClick={ handleEditCancel }>
+							{ __( 'Cancel', 'blockvault' ) }
+						</Button>
+					</Flex>
+				</div>
+			</div>
+		);
+	}
+
 	return (
-		<div className={ `blockvault-block-item${ selected ? ' blockvault-block-item--selected' : '' }` }>
+		<div className={ `blockvault-block-item${ selected ? ' blockvault-block-item--selected' : '' }${ flash ? ' blockvault-block-item--flash' : '' }` }>
 			<Flex direction="column" gap={ 1 }>
 				<FlexBlock>
 					<div className="blockvault-block-item__header">
@@ -161,6 +231,15 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 							onClick={ handleInsert }
 						>
 							{ __( 'Insert', 'blockvault' ) }
+						</Button>
+					</FlexItem>
+					<FlexItem>
+						<Button
+							variant="tertiary"
+							size="small"
+							onClick={ handleEdit }
+						>
+							{ __( 'Edit', 'blockvault' ) }
 						</Button>
 					</FlexItem>
 					<FlexItem>

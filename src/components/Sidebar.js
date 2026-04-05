@@ -118,7 +118,11 @@ export default function Sidebar( { onRequestSave } ) {
 			</PanelBody>
 
 			<PanelBody
-				title={ __( 'My Library', 'blockvault' ) }
+				title={
+					initialized
+						? `${ __( 'My Library', 'blockvault' ) } (${ blockLimit !== Infinity ? `${ blockCount }/${ blockLimit }` : blockCount })`
+						: __( 'My Library', 'blockvault' )
+				}
 				initialOpen
 			>
 				<TextControl

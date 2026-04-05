@@ -194,6 +194,42 @@
 		max-height: 80px;
 		overflow-y: auto;
 	}
+
+	// Edit mode.
+	&--editing {
+		border-color: var(--wp-admin-theme-color, #007cba);
+	}
+
+	// Success flash.
+	&--flash {
+		animation: blockvault-flash-success 0.8s ease;
+	}
+
+	&__edit-form {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	&__edit-input {
+		width: 100%;
+		padding: 6px 8px;
+		border: 1px solid var(--wp-components-color-gray-300, #ddd);
+		border-radius: 3px;
+		font-size: 13px;
+
+		&:focus {
+			border-color: var(--wp-admin-theme-color, #007cba);
+			outline: none;
+			box-shadow: 0 0 0 1px var(--wp-admin-theme-color, #007cba);
+		}
+	}
+}
+
+@keyframes blockvault-flash-success {
+	0% { background-color: transparent; }
+	20% { background-color: #d1fae5; }
+	100% { background-color: transparent; }
 }
 
 // Save modal.

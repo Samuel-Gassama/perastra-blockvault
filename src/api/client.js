@@ -78,6 +78,10 @@ export function saveBlock( data ) {
 	return getClient().saveBlock( data );
 }
 
+export function updateBlock( id, data ) {
+	return getClient().updateBlock( id, data );
+}
+
 export function deleteBlock( id ) {
 	return getClient().deleteBlock( id );
 }
