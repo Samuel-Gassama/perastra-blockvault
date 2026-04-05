@@ -90,17 +90,6 @@ export default function Sidebar( { onRequestSave } ) {
 		}
 	}, [ saveBlock ] );
 
-	// Keyboard shortcut: Ctrl+Shift+S (or Cmd+Shift+S on Mac).
-	useEffect( () => {
-		const handler = ( e ) => {
-			if ( ( e.ctrlKey || e.metaKey ) && e.shiftKey && e.key === 'S' ) {
-				e.preventDefault();
-				handleSaveClick();
-			}
-		};
-		document.addEventListener( 'keydown', handler );
-		return () => document.removeEventListener( 'keydown', handler );
-	}, [ handleSaveClick ] );
 
 	return (
 		<div className="blockvault-sidebar">

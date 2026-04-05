@@ -10,7 +10,7 @@ import {
 	PluginSidebarMoreMenuItem,
 	PluginBlockSettingsMenuItem,
 } from '@wordpress/editor';
-import { useState, useCallback } from '@wordpress/element';
+import { useState, useCallback, useEffect } from '@wordpress/element';
 import { useDispatch } from '@wordpress/data';
 import { store as noticesStore } from '@wordpress/notices';
 import { Icon } from '@wordpress/components';
@@ -46,6 +46,19 @@ function BlockVaultPlugin() {
 		}
 		setShowSaveModal( true );
 	}, [ hasSelection, createWarningNotice ] );
+
+	// Global keyboard shortcut: Ctrl+Shift+S / Cmd+Shift+S.
+	useEffect( () => {
+		const handler = ( e ) => {
+			if ( ( e.ctrlKey || e.metaKey ) && e.shiftKey && ( e.key === 'S' || e.key === 's' ) ) {
+				e.preventDefault();
+				e.stopPropagation();
+				handleRequestSave();
+			}
+		};
+		document.addEventListener( 'keydown', handler, true );
+		return () => document.removeEventListener( 'keydown', handler, true );
+	}, [ handleRequestSave ] );
 
 	return (
 		<>
