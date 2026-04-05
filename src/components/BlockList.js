@@ -39,6 +39,12 @@ const BlockList = memo( function BlockList( { onDuplicate } ) {
 
 	const handleBulkDelete = async () => {
 		if ( selectedIds.length === 0 ) return;
+		// eslint-disable-next-line no-alert
+		if ( ! window.confirm(
+			selectedIds.length === 1
+				? __( 'Delete this block? This cannot be undone.', 'blockvault' )
+				: `${ __( 'Delete', 'blockvault' ) } ${ selectedIds.length } ${ __( 'blocks? This cannot be undone.', 'blockvault' ) }`
+		) ) return;
 		setDeleting( true );
 		let deleted = 0;
 		for ( const id of selectedIds ) {
