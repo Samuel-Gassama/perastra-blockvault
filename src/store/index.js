@@ -36,6 +36,13 @@ const store = createReduxStore( STORE_NAME, {
 					blocks: [ action.block, ...state.blocks ],
 					error: '',
 				};
+			case 'UPDATE_BLOCK':
+				return {
+					...state,
+					blocks: state.blocks.map( ( b ) =>
+						b.id === action.block.id ? action.block : b
+					),
+				};
 			case 'REMOVE_BLOCK': {
 				const newBlocks = state.blocks.filter(
 					( b ) => b.id !== action.id
@@ -124,6 +131,20 @@ const store = createReduxStore( STORE_NAME, {
 					throw error;
 				} finally {
 					dispatch( { type: 'SET_SAVING', saving: false } );
+				}
+			};
+		},
+
+		updateBlock( id, data ) {
+			return async ( { dispatch } ) => {
+				try {
+					const block = await api.updateBlock( id, data );
+					dispatch( { type: 'UPDATE_BLOCK', block } );
+					return block;
+				} catch ( error ) {
+					// eslint-disable-next-line no-console
+					console.error( 'BlockVault: Failed to update block', error );
+					throw error;
 				}
 			};
 		},

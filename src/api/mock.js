@@ -99,6 +99,19 @@ export async function saveBlock( { name, markup, category = '' } ) {
 	return newBlock;
 }
 
+export async function updateBlock( id, { name, category } ) {
+	await delay( 200 );
+	const blocks = getStoredBlocks();
+	const index = blocks.findIndex( ( b ) => b.id === id );
+	if ( index === -1 ) {
+		throw new Error( __( 'Block not found.', 'blockvault' ) );
+	}
+	if ( name !== undefined ) blocks[ index ].name = name.trim();
+	if ( category !== undefined ) blocks[ index ].category = ( category || '' ).trim();
+	setStoredBlocks( blocks );
+	return blocks[ index ];
+}
+
 export async function deleteBlock( id ) {
 	await delay( 150 );
 	const blocks = getStoredBlocks();

@@ -2,7 +2,7 @@
  * BlockVault sidebar panel for the Gutenberg editor.
  */
 
-import { useEffect, useCallback } from '@wordpress/element';
+import { useEffect, useCallback, useState } from '@wordpress/element';
 import {
 	Button,
 	TextControl,
@@ -16,7 +16,7 @@ import { useSelectedBlocks } from '../hooks/useSelectedBlocks';
 import BlockList from './BlockList';
 
 export default function Sidebar( { onRequestSave } ) {
-	const { fetchBlocks, setSearchTerm, setCategoryFilter, setSortOrder } =
+	const { fetchBlocks, setSearchTerm, setCategoryFilter, setSortOrder, saveBlock } =
 		useDispatch( STORE_NAME );
 
 	const {
@@ -77,6 +77,20 @@ export default function Sidebar( { onRequestSave } ) {
 		}
 	}, [ onRequestSave ] );
 
+	// Duplicate block — save a copy with "(Copy)" suffix.
+	const handleDuplicate = useCallback( async ( block ) => {
+		try {
+			await saveBlock( {
+				name: block.name + ' (' + __( 'Copy', 'blockvault' ) + ')',
+				markup: block.markup,
+				category: block.category || '',
+			} );
+		} catch {
+			// Store will handle error display.
+		}
+	}, [ saveBlock ] );
+
+
 	return (
 		<div className="blockvault-sidebar">
 			<PanelBody
@@ -104,7 +118,11 @@ export default function Sidebar( { onRequestSave } ) {
 			</PanelBody>
 
 			<PanelBody
-				title={ __( 'My Library', 'blockvault' ) }
+				title={
+					initialized
+						? `${ __( 'My Library', 'blockvault' ) } (${ blockLimit !== Infinity ? `${ blockCount }/${ blockLimit }` : blockCount })`
+						: __( 'My Library', 'blockvault' )
+				}
 				initialOpen
 			>
 				<TextControl
@@ -171,7 +189,7 @@ export default function Sidebar( { onRequestSave } ) {
 					</div>
 				) }
 
-				<BlockList />
+				<BlockList onDuplicate={ handleDuplicate } />
 			</PanelBody>
 		</div>
 	);

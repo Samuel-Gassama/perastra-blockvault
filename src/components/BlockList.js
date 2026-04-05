@@ -2,14 +2,19 @@
  * List of saved blocks in the sidebar.
  */
 
-import { memo } from '@wordpress/element';
-import { useSelect } from '@wordpress/data';
-import { Spinner, Notice } from '@wordpress/components';
+import { memo, useState, useCallback } from '@wordpress/element';
+import { useSelect, useDispatch } from '@wordpress/data';
+import { Spinner, Notice, Button, Flex } from '@wordpress/components';
+import { store as noticesStore } from '@wordpress/notices';
 import { __ } from '@wordpress/i18n';
 import { STORE_NAME } from '../store';
 import BlockItem from './BlockItem';
 
-const BlockList = memo( function BlockList() {
+const BlockList = memo( function BlockList( { onDuplicate } ) {
+	const [ selectedIds, setSelectedIds ] = useState( [] );
+	const [ bulkMode, setBulkMode ] = useState( false );
+	const [ deleting, setDeleting ] = useState( false );
+
 	const { blocks, loading, initialized, error, searchTerm, categoryFilter } =
 		useSelect( ( select ) => {
 			const s = select( STORE_NAME );
@@ -22,6 +27,52 @@ const BlockList = memo( function BlockList() {
 				categoryFilter: s.getCategoryFilter(),
 			};
 		} );
+
+	const { deleteBlock } = useDispatch( STORE_NAME );
+	const { createSuccessNotice, createErrorNotice } = useDispatch( noticesStore );
+
+	const toggleSelect = useCallback( ( id ) => {
+		setSelectedIds( ( prev ) =>
+			prev.includes( id ) ? prev.filter( ( i ) => i !== id ) : [ ...prev, id ]
+		);
+	}, [] );
+
+	const handleBulkDelete = async () => {
+		if ( selectedIds.length === 0 ) return;
+		// eslint-disable-next-line no-alert
+		if ( ! window.confirm(
+			selectedIds.length === 1
+				? __( 'Delete this block? This cannot be undone.', 'blockvault' )
+				: `${ __( 'Delete', 'blockvault' ) } ${ selectedIds.length } ${ __( 'blocks? This cannot be undone.', 'blockvault' ) }`
+		) ) return;
+		setDeleting( true );
+		let deleted = 0;
+		for ( const id of selectedIds ) {
+			try {
+				await deleteBlock( id );
+				deleted++;
+			} catch {
+				// continue with remaining
+			}
+		}
+		setDeleting( false );
+		setSelectedIds( [] );
+		setBulkMode( false );
+		if ( deleted > 0 ) {
+			createSuccessNotice(
+				`${ deleted } ${ deleted !== 1 ? __( 'blocks', 'blockvault' ) : __( 'block', 'blockvault' ) } ${ __( 'deleted.', 'blockvault' ) }`,
+				{ type: 'snackbar' }
+			);
+		}
+	};
+
+	const handleSelectAll = () => {
+		if ( selectedIds.length === blocks.length ) {
+			setSelectedIds( [] );
+		} else {
+			setSelectedIds( blocks.map( ( b ) => b.id ) );
+		}
+	};
 
 	if ( loading || ! initialized ) {
 		return (
@@ -118,8 +169,57 @@ const BlockList = memo( function BlockList() {
 
 	return (
 		<div className="blockvault-block-list">
+			{ blocks.length > 1 && (
+				<div className="blockvault-block-list__toolbar">
+					{ bulkMode ? (
+						<Flex gap={ 2 } align="center">
+							<Button
+								variant="tertiary"
+								size="small"
+								onClick={ handleSelectAll }
+							>
+								{ selectedIds.length === blocks.length
+									? __( 'Deselect all', 'blockvault' )
+									: __( 'Select all', 'blockvault' ) }
+							</Button>
+							{ selectedIds.length > 0 && (
+								<Button
+									isDestructive
+									size="small"
+									isBusy={ deleting }
+									onClick={ handleBulkDelete }
+								>
+									{ `${ __( 'Delete', 'blockvault' ) } (${ selectedIds.length })` }
+								</Button>
+							) }
+							<Button
+								variant="tertiary"
+								size="small"
+								onClick={ () => { setBulkMode( false ); setSelectedIds( [] ); } }
+							>
+								{ __( 'Cancel', 'blockvault' ) }
+							</Button>
+						</Flex>
+					) : (
+						<Button
+							variant="tertiary"
+							size="small"
+							onClick={ () => setBulkMode( true ) }
+						>
+							{ __( 'Select multiple', 'blockvault' ) }
+						</Button>
+					) }
+				</div>
+			) }
 			{ blocks.map( ( block ) => (
-				<BlockItem key={ block.id } block={ block } />
+				<BlockItem
+					key={ block.id }
+					block={ block }
+					selectable={ bulkMode }
+					selected={ selectedIds.includes( block.id ) }
+					onToggleSelect={ toggleSelect }
+					onDuplicate={ onDuplicate }
+				/>
 			) ) }
 		</div>
 	);
