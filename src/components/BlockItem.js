@@ -30,7 +30,7 @@ function getMarkupPreview( markup ) {
 	return text.length > 120 ? text.slice( 0, 120 ) + '...' : text;
 }
 
-const BlockItem = memo( function BlockItem( { block } ) {
+const BlockItem = memo( function BlockItem( { block, selectable, selected, onToggleSelect, onDuplicate } ) {
 	const [ confirming, setConfirming ] = useState( false );
 	const [ expanded, setExpanded ] = useState( false );
 
@@ -95,12 +95,28 @@ const BlockItem = memo( function BlockItem( { block } ) {
 
 	const preview = getMarkupPreview( block.markup );
 
+	const handleDuplicate = () => {
+		if ( onDuplicate ) {
+			onDuplicate( block );
+		}
+	};
+
 	return (
-		<div className="blockvault-block-item">
+		<div className={ `blockvault-block-item${ selected ? ' blockvault-block-item--selected' : '' }` }>
 			<Flex direction="column" gap={ 1 }>
 				<FlexBlock>
-					<div className="blockvault-block-item__name">
-						{ block.name }
+					<div className="blockvault-block-item__header">
+						{ selectable && (
+							<input
+								type="checkbox"
+								className="blockvault-block-item__checkbox"
+								checked={ selected }
+								onChange={ () => onToggleSelect( block.id ) }
+							/>
+						) }
+						<div className="blockvault-block-item__name">
+							{ block.name }
+						</div>
 					</div>
 					<div className="blockvault-block-item__meta">
 						<span>
@@ -137,7 +153,7 @@ const BlockItem = memo( function BlockItem( { block } ) {
 					) }
 				</FlexBlock>
 
-				<Flex gap={ 2 } justify="flex-start">
+				<Flex gap={ 2 } justify="flex-start" wrap>
 					<FlexItem>
 						<Button
 							variant="primary"
@@ -145,6 +161,15 @@ const BlockItem = memo( function BlockItem( { block } ) {
 							onClick={ handleInsert }
 						>
 							{ __( 'Insert', 'blockvault' ) }
+						</Button>
+					</FlexItem>
+					<FlexItem>
+						<Button
+							variant="tertiary"
+							size="small"
+							onClick={ handleDuplicate }
+						>
+							{ __( 'Duplicate', 'blockvault' ) }
 						</Button>
 					</FlexItem>
 					<FlexItem>

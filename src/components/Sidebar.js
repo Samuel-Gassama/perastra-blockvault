@@ -2,7 +2,7 @@
  * BlockVault sidebar panel for the Gutenberg editor.
  */
 
-import { useEffect, useCallback } from '@wordpress/element';
+import { useEffect, useCallback, useState } from '@wordpress/element';
 import {
 	Button,
 	TextControl,
@@ -16,7 +16,7 @@ import { useSelectedBlocks } from '../hooks/useSelectedBlocks';
 import BlockList from './BlockList';
 
 export default function Sidebar( { onRequestSave } ) {
-	const { fetchBlocks, setSearchTerm, setCategoryFilter, setSortOrder } =
+	const { fetchBlocks, setSearchTerm, setCategoryFilter, setSortOrder, saveBlock } =
 		useDispatch( STORE_NAME );
 
 	const {
@@ -76,6 +76,31 @@ export default function Sidebar( { onRequestSave } ) {
 			onRequestSave();
 		}
 	}, [ onRequestSave ] );
+
+	// Duplicate block — save a copy with "(Copy)" suffix.
+	const handleDuplicate = useCallback( async ( block ) => {
+		try {
+			await saveBlock( {
+				name: block.name + ' (' + __( 'Copy', 'blockvault' ) + ')',
+				markup: block.markup,
+				category: block.category || '',
+			} );
+		} catch {
+			// Store will handle error display.
+		}
+	}, [ saveBlock ] );
+
+	// Keyboard shortcut: Ctrl+Shift+S (or Cmd+Shift+S on Mac).
+	useEffect( () => {
+		const handler = ( e ) => {
+			if ( ( e.ctrlKey || e.metaKey ) && e.shiftKey && e.key === 'S' ) {
+				e.preventDefault();
+				handleSaveClick();
+			}
+		};
+		document.addEventListener( 'keydown', handler );
+		return () => document.removeEventListener( 'keydown', handler );
+	}, [ handleSaveClick ] );
 
 	return (
 		<div className="blockvault-sidebar">
@@ -171,7 +196,7 @@ export default function Sidebar( { onRequestSave } ) {
 					</div>
 				) }
 
-				<BlockList />
+				<BlockList onDuplicate={ handleDuplicate } />
 			</PanelBody>
 		</div>
 	);
