@@ -1,0 +1,227 @@
+// BlockVault editor sidebar styles.
+
+.blockvault-sidebar {
+	&__save-btn {
+		width: 100%;
+		justify-content: center;
+	}
+
+	&__hint {
+		color: var(--wp-components-color-foreground-subtle, #757575);
+		font-size: 12px;
+		margin-top: 8px;
+	}
+
+	&__search {
+		margin-bottom: 8px;
+	}
+
+	&__filters {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		margin-bottom: 12px;
+	}
+
+	&__filter {
+		margin-bottom: 0;
+	}
+
+	// Usage bar.
+	&__usage {
+		margin-bottom: 12px;
+		padding: 8px;
+		background: var(--wp-components-color-gray-100, #f6f7f7);
+		border-radius: 4px;
+	}
+
+	&__usage--full {
+		background: #fef3cd;
+	}
+
+	&__usage-bar {
+		height: 4px;
+		background: var(--wp-components-color-gray-300, #ddd);
+		border-radius: 2px;
+		overflow: hidden;
+		margin-bottom: 4px;
+	}
+
+	&__usage-fill {
+		height: 100%;
+		background: var(--wp-admin-theme-color, #007cba);
+		border-radius: 2px;
+		transition: width 0.3s ease;
+
+		.blockvault-sidebar__usage--full & {
+			background: #d63638;
+		}
+	}
+
+	&__usage-text {
+		font-size: 11px;
+		color: var(--wp-components-color-foreground-subtle, #757575);
+
+		.blockvault-sidebar__usage--full & {
+			color: #8a6d3b;
+		}
+
+		a {
+			color: var(--wp-admin-theme-color, #007cba);
+			text-decoration: underline;
+			font-weight: 600;
+		}
+	}
+}
+
+// Block list.
+.blockvault-block-list {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+
+	&__loading {
+		display: flex;
+		justify-content: center;
+		padding: 24px 0;
+	}
+
+	&__empty {
+		text-align: center;
+		padding: 16px 0;
+		color: var(--wp-components-color-foreground-subtle, #757575);
+
+		p {
+			margin: 4px 0;
+		}
+	}
+
+	&__hint {
+		font-size: 12px;
+	}
+}
+
+// Individual block card.
+.blockvault-block-item {
+	background: var(--wp-components-color-background, #fff);
+	border: 1px solid var(--wp-components-color-gray-300, #ddd);
+	border-radius: 4px;
+	padding: 12px;
+	transition: border-color 0.15s ease;
+
+	&:hover {
+		border-color: var(--wp-components-color-gray-400, #bbb);
+	}
+
+	&__name {
+		font-weight: 600;
+		font-size: 13px;
+		margin-bottom: 4px;
+		word-break: break-word;
+		line-height: 1.4;
+	}
+
+	&__meta {
+		font-size: 11px;
+		color: var(--wp-components-color-foreground-subtle, #757575);
+		display: flex;
+		gap: 8px;
+		align-items: center;
+		flex-wrap: wrap;
+		margin-bottom: 8px;
+	}
+
+	&__category {
+		background: var(--wp-components-color-gray-100, #f0f0f0);
+		padding: 1px 6px;
+		border-radius: 3px;
+		font-size: 11px;
+	}
+
+	&__date {
+		margin-left: auto;
+	}
+
+	// Preview toggle button.
+	&__preview-toggle {
+		background: none;
+		border: none;
+		padding: 0;
+		margin: 4px 0 0;
+		cursor: pointer;
+		color: var(--wp-admin-theme-color, #007cba);
+		font-size: 11px;
+		text-decoration: underline;
+
+		&:hover {
+			color: var(--wp-admin-theme-color-darker-10, #006ba1);
+		}
+	}
+
+	// Content preview.
+	&__preview {
+		margin-top: 8px;
+		padding: 8px;
+		background: var(--wp-components-color-gray-100, #f6f7f7);
+		border-radius: 3px;
+		font-size: 11px;
+		line-height: 1.5;
+		color: var(--wp-components-color-foreground-subtle, #757575);
+		word-break: break-word;
+		max-height: 80px;
+		overflow-y: auto;
+	}
+}
+
+// Save modal.
+.blockvault-save-modal {
+	.components-modal__content {
+		min-width: 400px;
+	}
+
+	&__info {
+		font-size: 12px;
+		color: var(--wp-components-color-foreground-subtle, #757575);
+		margin: 8px 0 0;
+	}
+
+	&__usage {
+		color: var(--wp-components-color-foreground-subtle, #757575);
+	}
+
+	.components-notice {
+		margin: 0 0 16px;
+	}
+}
+
+// Onboarding empty state.
+.blockvault-onboarding {
+	padding: 24px 8px !important;
+
+	&__icon {
+		color: var(--wp-components-color-gray-300, #ddd);
+		margin-bottom: 12px;
+	}
+
+	&__title {
+		font-size: 14px;
+		font-weight: 600;
+		color: var(--wp-components-color-foreground, #1e1e1e);
+		margin-bottom: 16px !important;
+	}
+
+	&__steps {
+		text-align: left;
+		font-size: 12px;
+		line-height: 1.6;
+
+		p {
+			margin: 6px 0;
+		}
+
+		strong {
+			color: var(--wp-admin-theme-color, #007cba);
+			margin-right: 4px;
+		}
+	}
+}
