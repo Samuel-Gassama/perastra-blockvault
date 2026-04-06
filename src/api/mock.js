@@ -119,6 +119,7 @@ export async function toggleFavorite() {
 	throw new Error( __( 'Favorites require a paid plan.', 'blockvault' ) );
 }
 
+export async function getAccountInfo() { return { plan: 'free', block_limit: 10, site_limit: 1 }; }
 export async function getCollections() { return []; }
 export async function createCollection() { throw new Error( __( 'Collections require a paid plan.', 'blockvault' ) ); }
 export async function deleteCollection() { throw new Error( __( 'Collections require a paid plan.', 'blockvault' ) ); }

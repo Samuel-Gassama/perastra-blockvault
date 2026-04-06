@@ -5,7 +5,7 @@
 import { useState, memo } from '@wordpress/element';
 import { Button, Flex, FlexBlock, FlexItem } from '@wordpress/components';
 import { useDispatch, useSelect } from '@wordpress/data';
-import { parse } from '@wordpress/blocks';
+import { parse, createBlock } from '@wordpress/blocks';
 import { store as blockEditorStore } from '@wordpress/block-editor';
 import { store as noticesStore } from '@wordpress/notices';
 import { __ } from '@wordpress/i18n';
@@ -60,8 +60,16 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 				return;
 			}
 
-			// Inject captured CSS if available.
+			// If there's responsive/interactive CSS, inject it:
+			// 1. As a <style> tag in the editor for immediate preview.
+			// 2. As a Custom HTML block for the frontend.
 			if ( block.css ) {
+				const styleBlock = createBlock( 'core/html', {
+					content: `<style>/* BlockVault: ${ block.name } */\n${ block.css }\n</style>`,
+				} );
+				insertBlocks( [ styleBlock, ...parsed ] );
+
+				// Also inject into editor head for immediate preview.
 				const styleId = `blockvault-css-${ block.id }`;
 				if ( ! document.getElementById( styleId ) ) {
 					const style = document.createElement( 'style' );
@@ -69,9 +77,9 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 					style.textContent = block.css;
 					document.head.appendChild( style );
 				}
+			} else {
+				insertBlocks( parsed );
 			}
-
-			insertBlocks( parsed );
 			setFlash( true );
 			setTimeout( () => setFlash( false ), 900 );
 			createSuccessNotice(

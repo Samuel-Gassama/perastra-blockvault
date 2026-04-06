@@ -109,18 +109,19 @@ const store = createReduxStore( STORE_NAME, {
 					// Migrate local blocks to cloud on first load after API key is set.
 					await api.migrateLocalToCloud();
 
-					const [ blocks, blockLimit, collections ] = await Promise.all( [
+					const [ blocks, blockLimit, collections, accountInfo ] = await Promise.all( [
 						api.getBlocks(),
 						api.getBlockLimit(),
 						api.getCollections().catch( () => [] ),
+						api.getAccountInfo().catch( () => null ),
 					] );
 					dispatch( { type: 'SET_BLOCKS', blocks } );
 					dispatch( { type: 'SET_BLOCK_LIMIT', blockLimit } );
 					dispatch( { type: 'SET_COLLECTIONS', collections } );
 
-					// Set plan from localized settings.
+					// Set plan from API (most accurate), fallback to PHP setting.
 					/* global blockvaultSettings */
-					const plan = blockvaultSettings?.plan || 'free';
+					const plan = accountInfo?.plan || blockvaultSettings?.plan || 'free';
 					dispatch( { type: 'SET_PLAN', plan } );
 				} catch ( error ) {
 					const message =
@@ -138,15 +139,11 @@ const store = createReduxStore( STORE_NAME, {
 			};
 		},
 
-		saveBlock( { name, markup, category } ) {
+		saveBlock( data ) {
 			return async ( { dispatch } ) => {
 				dispatch( { type: 'SET_SAVING', saving: true } );
 				try {
-					const block = await api.saveBlock( {
-						name,
-						markup,
-						category,
-					} );
+					const block = await api.saveBlock( data );
 					dispatch( { type: 'ADD_BLOCK', block } );
 					return block;
 				} catch ( error ) {

@@ -94,6 +94,10 @@ export function getBlockLimit() {
 	return getClient().getBlockLimit();
 }
 
+export function getAccountInfo() {
+	return getClient().getAccountInfo();
+}
+
 export function toggleFavorite( id, currentValue ) {
 	return getClient().toggleFavorite( id, currentValue );
 }

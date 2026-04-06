@@ -45,6 +45,11 @@ class BlockVault_Admin {
 			'sanitize_callback' => 'esc_url_raw',
 			'default'           => self::API_URL_DEFAULT,
 		) );
+
+		// Clear plan cache whenever API key changes.
+		add_action( 'update_option_blockvault_api_key', function() {
+			delete_transient( 'blockvault_plan_cache' );
+		} );
 	}
 
 	public static function enqueue_admin_styles( $hook ) {
@@ -495,6 +500,7 @@ class BlockVault_Admin {
 		}
 
 		update_option( 'blockvault_api_key', '' );
+		delete_transient( 'blockvault_plan_cache' );
 		wp_send_json_success();
 	}
 

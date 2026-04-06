@@ -15,7 +15,7 @@ import { useDispatch, useSelect } from '@wordpress/data';
 import { store as noticesStore } from '@wordpress/notices';
 import { __ } from '@wordpress/i18n';
 import { STORE_NAME } from '../store';
-import { extractBlockCSS } from '../utils/extract-css';
+import { inlineBlockStyles, extractResponsiveCSS } from '../utils/extract-css';
 
 export default function SaveModal( {
 	defaultName,
@@ -54,15 +54,18 @@ export default function SaveModal( {
 		}
 
 		try {
-			// Extract CSS for Pro+ plans.
+			let finalMarkup = serialized;
 			let css = '';
+
+			// Pro+ plans: inline critical styles + capture responsive CSS.
 			if ( isPro && clientIds ) {
-				css = extractBlockCSS( clientIds );
+				finalMarkup = inlineBlockStyles( serialized, clientIds );
+				css = extractResponsiveCSS( clientIds );
 			}
 
 			const data = {
 				name: name.trim(),
-				markup: serialized,
+				markup: finalMarkup,
 				category: category.trim(),
 			};
 

@@ -118,9 +118,11 @@ async function apiFetch( url, options = {} ) {
 }
 
 export async function getBlockLimit() {
-	// Cloud plans: the API returns the user's limit based on their plan.
-	// For now, return Infinity (unlimited) — the server enforces the real limit.
 	return Infinity;
+}
+
+export async function getAccountInfo() {
+	return apiFetch( `${ getBaseUrl() }/auth/account` );
 }
 
 export async function getBlocks() {
