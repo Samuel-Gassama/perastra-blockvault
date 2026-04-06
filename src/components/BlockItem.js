@@ -59,11 +59,23 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 				);
 				return;
 			}
+
+			// Inject captured CSS if available.
+			if ( block.css ) {
+				const styleId = `blockvault-css-${ block.id }`;
+				if ( ! document.getElementById( styleId ) ) {
+					const style = document.createElement( 'style' );
+					style.id = styleId;
+					style.textContent = block.css;
+					document.head.appendChild( style );
+				}
+			}
+
 			insertBlocks( parsed );
 			setFlash( true );
 			setTimeout( () => setFlash( false ), 900 );
 			createSuccessNotice(
-				`"${ block.name }" ${ __( 'inserted.', 'blockvault' ) }`,
+				`"${ block.name }" ${ __( 'inserted.', 'blockvault' ) }${ block.css ? ' ' + __( '(with styles)', 'blockvault' ) : '' }`,
 				{ type: 'snackbar' }
 			);
 		} catch {

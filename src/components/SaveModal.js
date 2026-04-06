@@ -15,21 +15,24 @@ import { useDispatch, useSelect } from '@wordpress/data';
 import { store as noticesStore } from '@wordpress/notices';
 import { __ } from '@wordpress/i18n';
 import { STORE_NAME } from '../store';
+import { extractBlockCSS } from '../utils/extract-css';
 
 export default function SaveModal( {
 	defaultName,
 	serialized,
 	blockCount,
+	clientIds,
 	onClose,
 } ) {
 	const [ name, setName ] = useState( defaultName );
 	const [ category, setCategory ] = useState( '' );
+	const [ description, setDescription ] = useState( '' );
 
 	const { saveBlock } = useDispatch( STORE_NAME );
 	const { createSuccessNotice, createErrorNotice } =
 		useDispatch( noticesStore );
 
-	const { isSaving, existingCategories, atLimit, blockLimit, blockUsed } =
+	const { isSaving, existingCategories, atLimit, blockLimit, blockUsed, plan } =
 		useSelect( ( select ) => {
 			const s = select( STORE_NAME );
 			return {
@@ -38,8 +41,12 @@ export default function SaveModal( {
 				atLimit: s.isAtLimit(),
 				blockLimit: s.getBlockLimit(),
 				blockUsed: s.getBlockCount(),
+				plan: s.getPlan(),
 			};
 		}, [] );
+
+	const isPro = [ 'pro', 'agency' ].includes( plan );
+	const isPaid = plan !== 'free';
 
 	const handleSave = async () => {
 		if ( ! name.trim() || atLimit ) {
@@ -47,13 +54,29 @@ export default function SaveModal( {
 		}
 
 		try {
-			await saveBlock( {
+			// Extract CSS for Pro+ plans.
+			let css = '';
+			if ( isPro && clientIds ) {
+				css = extractBlockCSS( clientIds );
+			}
+
+			const data = {
 				name: name.trim(),
 				markup: serialized,
 				category: category.trim(),
-			} );
+			};
+
+			if ( isPaid && description.trim() ) {
+				data.description = description.trim();
+			}
+
+			if ( css ) {
+				data.css = css;
+			}
+
+			await saveBlock( data );
 			createSuccessNotice(
-				`"${ name.trim() }" ${ __( 'saved to BlockVault', 'blockvault' ) } (${ blockCount } ${ blockCount !== 1 ? __( 'blocks', 'blockvault' ) : __( 'block', 'blockvault' ) })`,
+				`"${ name.trim() }" ${ __( 'saved to BlockVault', 'blockvault' ) } (${ blockCount } ${ blockCount !== 1 ? __( 'blocks', 'blockvault' ) : __( 'block', 'blockvault' ) })${ css ? ' ' + __( '+ styles captured', 'blockvault' ) : '' }`,
 				{ type: 'snackbar' }
 			);
 			onClose();
@@ -114,6 +137,13 @@ export default function SaveModal( {
 				}
 				disabled={ atLimit }
 			/>
+			<TextControl
+				label={ isPaid ? __( 'Notes (optional)', 'blockvault' ) : __( 'Notes (Solo+)', 'blockvault' ) }
+				value={ description }
+				onChange={ setDescription }
+				placeholder={ isPaid ? __( 'Internal notes about this block', 'blockvault' ) : __( 'Upgrade to Solo to add notes', 'blockvault' ) }
+				disabled={ atLimit || ! isPaid }
+			/>
 
 			{ ! atLimit && (
 				<p className="blockvault-save-modal__info">
@@ -122,6 +152,11 @@ export default function SaveModal( {
 						? __( 'blocks', 'blockvault' )
 						: __( 'block', 'blockvault' ) }{ ' ' }
 					{ __( 'will be saved.', 'blockvault' ) }
+					{ isPro && (
+						<span className="blockvault-save-modal__css-badge">
+							{ ' ' }{ __( '+ CSS styles will be captured', 'blockvault' ) }
+						</span>
+					) }
 					{ blockLimit !== Infinity && (
 						<span className="blockvault-save-modal__usage">
 							{ ' ' }({ blockUsed }/{ blockLimit }{ ' ' }

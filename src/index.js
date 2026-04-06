@@ -32,7 +32,7 @@ const VaultIcon = () => <Icon icon={ VAULT_ICON_SVG } />;
 
 function BlockVaultPlugin() {
 	const [ showSaveModal, setShowSaveModal ] = useState( false );
-	const { hasSelection, serialized, defaultName, blocks } =
+	const { hasSelection, serialized, defaultName, blocks, clientIds } =
 		useSelectedBlocks();
 	const { createWarningNotice } = useDispatch( noticesStore );
 
@@ -88,6 +88,7 @@ function BlockVaultPlugin() {
 					defaultName={ defaultName }
 					serialized={ serialized }
 					blockCount={ blocks.length }
+					clientIds={ clientIds }
 					onClose={ () => setShowSaveModal( false ) }
 				/>
 			) }

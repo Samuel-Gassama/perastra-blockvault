@@ -127,10 +127,10 @@ export async function getBlocks() {
 	return apiFetch( `${ getBaseUrl() }/blocks` );
 }
 
-export async function saveBlock( { name, markup, category = '' } ) {
+export async function saveBlock( { name, markup, category = '', description = '', css = '' } ) {
 	return apiFetch( `${ getBaseUrl() }/blocks`, {
 		method: 'POST',
-		body: JSON.stringify( { name, markup, category } ),
+		body: JSON.stringify( { name, markup, category, description, css } ),
 	} );
 }
 

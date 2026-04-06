@@ -193,9 +193,12 @@ const store = createReduxStore( STORE_NAME, {
 		},
 
 		toggleFavorite( id ) {
-			return async ( { dispatch } ) => {
+			return async ( { dispatch, select } ) => {
 				try {
-					const block = await api.toggleFavorite( id, false );
+					const blocks = select.getBlocks();
+					const current = blocks.find( ( b ) => b.id === id );
+					const newValue = ! ( current?.is_favorite );
+					const block = await api.updateBlock( id, { is_favorite: newValue } );
 					dispatch( { type: 'UPDATE_BLOCK', block } );
 				} catch ( error ) {
 					console.error( 'BlockVault: Failed to toggle favorite', error );
@@ -256,9 +259,13 @@ const store = createReduxStore( STORE_NAME, {
 			}
 
 			if ( categoryFilter ) {
-				blocks = blocks.filter(
-					( b ) => b.category === categoryFilter
-				);
+				if ( categoryFilter === '__favorites__' ) {
+					blocks = blocks.filter( ( b ) => b.is_favorite );
+				} else {
+					blocks = blocks.filter(
+						( b ) => b.category === categoryFilter
+					);
+				}
 			}
 
 			// Sort blocks.

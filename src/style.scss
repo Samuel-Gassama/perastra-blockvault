@@ -267,6 +267,11 @@
 		margin: 8px 0 0;
 	}
 
+	&__css-badge {
+		color: #059669;
+		font-weight: 600;
+	}
+
 	&__usage {
 		color: var(--wp-components-color-foreground-subtle, #757575);
 	}

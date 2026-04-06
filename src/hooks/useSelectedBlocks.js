@@ -69,6 +69,7 @@ export function useSelectedBlocks() {
 			hasSelection: true,
 			blocks,
 			serialized,
+			clientIds,
 			blockTypes: typeNames,
 			defaultName,
 		};

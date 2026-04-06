@@ -55,6 +55,7 @@ export default function Sidebar( { onRequestSave } ) {
 
 	const categoryOptions = [
 		{ label: __( 'All Categories', 'blockvault' ), value: '' },
+		{ label: '\u2605 ' + __( 'Favorites', 'blockvault' ), value: '__favorites__' },
 		...categories.map( ( c ) => ( { label: c, value: c } ) ),
 	];
 
