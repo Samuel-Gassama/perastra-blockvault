@@ -66,6 +66,7 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 			if ( block.css ) {
 				const styleBlock = createBlock( 'core/html', {
 					content: `<style>/* BlockVault: ${ block.name } */\n${ block.css }\n</style>`,
+					metadata: { name: `${ block.name } — CSS` },
 				} );
 				insertBlocks( [ styleBlock, ...parsed ] );
 

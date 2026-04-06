@@ -99,6 +99,17 @@
 	&__hint {
 		font-size: 12px;
 	}
+
+	&__collections {
+		margin-bottom: 12px;
+	}
+
+	&__new-collection {
+		.blockvault-sidebar__collection-input {
+			flex: 1;
+			margin-bottom: 0;
+		}
+	}
 }
 
 // Block list toolbar (bulk actions).
