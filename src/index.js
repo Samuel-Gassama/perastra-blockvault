@@ -19,6 +19,7 @@ import { __ } from '@wordpress/i18n';
 import './store';
 import './style.scss';
 import Sidebar from './components/Sidebar';
+import { STORE_NAME } from './store';
 import SaveModal from './components/SaveModal';
 import { useSelectedBlocks } from './hooks/useSelectedBlocks';
 
@@ -29,6 +30,9 @@ const VAULT_ICON_SVG = (
 );
 
 const VaultIcon = () => <Icon icon={ VAULT_ICON_SVG } />;
+
+// Fetch blocks + plan immediately on plugin load (not waiting for sidebar).
+wp.data.dispatch( STORE_NAME ).fetchBlocks();
 
 function BlockVaultPlugin() {
 	const [ showSaveModal, setShowSaveModal ] = useState( false );
