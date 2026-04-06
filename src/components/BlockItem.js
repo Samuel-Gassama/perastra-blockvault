@@ -42,7 +42,10 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 	const { createSuccessNotice, createErrorNotice, createWarningNotice } =
 		useDispatch( noticesStore );
 
-	const plan = useSelect( ( sel ) => sel( STORE_NAME ).getPlan() );
+	const { plan, collections } = useSelect( ( sel ) => ( {
+		plan: sel( STORE_NAME ).getPlan(),
+		collections: sel( STORE_NAME ).getCollections(),
+	} ) );
 
 	const [ flash, setFlash ] = useState( false );
 
@@ -140,11 +143,13 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 	};
 
 	const [ editDescription, setEditDescription ] = useState( '' );
+	const [ editCollection, setEditCollection ] = useState( '' );
 
 	const handleEdit = () => {
 		setEditName( block.name );
 		setEditCategory( block.category || '' );
 		setEditDescription( block.description || '' );
+		setEditCollection( '' );
 		setEditing( true );
 	};
 
@@ -159,6 +164,13 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 				data.description = editDescription.trim();
 			}
 			await updateBlock( block.id, data );
+
+			// Add to collection if selected.
+			if ( editCollection && plan !== 'free' ) {
+				const { addBlockToCollection } = await import( '../api/client' );
+				await addBlockToCollection( editCollection, block.id );
+			}
+
 			createSuccessNotice(
 				__( 'Block updated.', 'blockvault' ),
 				{ type: 'snackbar' }
@@ -212,6 +224,18 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 						disabled={ plan === 'free' }
 						onKeyDown={ ( e ) => { if ( e.key === 'Enter' ) handleEditSave(); if ( e.key === 'Escape' ) handleEditCancel(); } }
 					/>
+					{ plan !== 'free' && collections && collections.length > 0 && (
+						<select
+							className="blockvault-block-item__edit-input"
+							value={ editCollection }
+							onChange={ ( e ) => setEditCollection( e.target.value ) }
+						>
+							<option value="">{ __( 'Add to collection...', 'blockvault' ) }</option>
+							{ collections.map( ( c ) => (
+								<option key={ c.id } value={ c.id }>{ c.name }</option>
+							) ) }
+						</select>
+					) }
 					<Flex gap={ 1 }>
 						<Button variant="primary" size="small" onClick={ handleEditSave }>
 							{ __( 'Save', 'blockvault' ) }
