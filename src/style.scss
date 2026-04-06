@@ -79,6 +79,7 @@
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
+	margin-top: 16px;
 
 	&__loading {
 		display: flex;
@@ -101,14 +102,26 @@
 	}
 
 	&__collections {
-		margin-bottom: 12px;
+		margin-bottom: 20px;
+		padding-bottom: 12px;
+		border-bottom: 1px solid var(--wp-components-color-gray-200, #e0e0e0);
 	}
 
 	&__new-collection {
+		margin-bottom: 8px;
+		align-items: center !important;
+
 		.blockvault-sidebar__collection-input {
 			flex: 1;
 			margin-bottom: 0;
 		}
+
+
+		.components-button.is-primary {
+	
+			height: 32px !important;
+		}
+
 	}
 }
 
@@ -158,8 +171,13 @@
 		flex-shrink: 0;
 		transition: color 0.15s;
 
-		&:hover { color: #f59e0b; }
-		&.is-active { color: #f59e0b; }
+		&:hover {
+			color: #f59e0b;
+		}
+
+		&.is-active {
+			color: #f59e0b;
+		}
 	}
 
 	&__description {
@@ -261,9 +279,17 @@
 }
 
 @keyframes blockvault-flash-success {
-	0% { background-color: transparent; }
-	20% { background-color: #d1fae5; }
-	100% { background-color: transparent; }
+	0% {
+		background-color: transparent;
+	}
+
+	20% {
+		background-color: #d1fae5;
+	}
+
+	100% {
+		background-color: transparent;
+	}
 }
 
 // Save modal.

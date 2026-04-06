@@ -237,16 +237,16 @@ export default function Sidebar( { onRequestSave } ) {
 								/>
 								<Button
 									variant="primary"
-									size="small"
 									onClick={ handleCreateCollection }
 									disabled={ ! newCollectionName.trim() }
+									style={ { height: '32px' } }
 								>
 									{ __( 'Add', 'blockvault' ) }
 								</Button>
 								<Button
 									variant="tertiary"
-									size="small"
 									onClick={ () => { setShowNewCollection( false ); setNewCollectionName( '' ); } }
+									style={ { height: '32px' } }
 								>
 									{ __( 'Cancel', 'blockvault' ) }
 								</Button>
