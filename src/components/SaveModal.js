@@ -6,6 +6,7 @@ import { useState } from '@wordpress/element';
 import {
 	Modal,
 	TextControl,
+	CheckboxControl,
 	Button,
 	Flex,
 	FlexItem,
@@ -27,6 +28,7 @@ export default function SaveModal( {
 	const [ name, setName ] = useState( defaultName );
 	const [ category, setCategory ] = useState( '' );
 	const [ description, setDescription ] = useState( '' );
+	const [ captureCSS, setCaptureCSS ] = useState( false );
 
 	const { saveBlock } = useDispatch( STORE_NAME );
 	const { createSuccessNotice, createErrorNotice } =
@@ -56,8 +58,8 @@ export default function SaveModal( {
 		try {
 			let css = '';
 
-			// Pro+ plans: extract CSS from the frontend page.
-			if ( isPro && serialized ) {
+			// Pro+ plans: extract CSS from the frontend page (only if opted in).
+			if ( isPro && captureCSS && serialized ) {
 				css = await extractBlockCSS( clientIds, serialized );
 			}
 
@@ -146,6 +148,16 @@ export default function SaveModal( {
 				disabled={ atLimit || ! isPaid }
 			/>
 
+			{ isPro && ! atLimit && (
+				<CheckboxControl
+					label={ __( 'Capture CSS styles', 'blockvault' ) }
+					help={ __( 'Extract theme CSS so the block looks identical on other sites.', 'blockvault' ) }
+					checked={ captureCSS }
+					onChange={ setCaptureCSS }
+					__nextHasNoMarginBottom
+				/>
+			) }
+
 			{ ! atLimit && (
 				<p className="blockvault-save-modal__info">
 					{ blockCount }{ ' ' }
@@ -153,7 +165,7 @@ export default function SaveModal( {
 						? __( 'blocks', 'blockvault' )
 						: __( 'block', 'blockvault' ) }{ ' ' }
 					{ __( 'will be saved.', 'blockvault' ) }
-					{ isPro && (
+					{ isPro && captureCSS && (
 						<span className="blockvault-save-modal__css-badge">
 							{ ' ' }{ __( '+ CSS styles will be captured', 'blockvault' ) }
 						</span>
