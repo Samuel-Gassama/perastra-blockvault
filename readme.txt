@@ -20,15 +20,18 @@ PerAstra BlockVault lets WordPress freelancers and agencies save Gutenberg block
 
 * **Save any blocks** — Select one or more blocks, click save, done.
 * **Insert anywhere** — Open your library on any WordPress site and insert in one click.
-* **Search, filter, and sort** — Find blocks by name or category; sort newest, oldest, or A–Z / Z–A.
+* **Search, filter, and sort** — Find blocks by name or category; filter by Favorites or by Collection; sort newest, oldest, or A–Z / Z–A.
 * **Favorites (pinning)** — Pin your most-used blocks to the top. (Solo plan or higher.)
 * **Collections** — Group related blocks into named collections for projects or client sites. (Solo plan or higher.)
 * **Inline edit** — Rename blocks, change categories, add notes, and assign collections without leaving the sidebar.
 * **Bulk actions** — Multi-select blocks for bulk delete (with confirmation) or duplicate.
 * **Keyboard shortcut** — Save selected blocks without reaching for the mouse.
 * **Content preview** — See a text preview of saved blocks before inserting.
-* **CSS capture (opt-in)** — Optionally extract theme CSS so blocks look identical on other sites. (Solo plan or higher.)
+* **CSS capture (opt-in)** — Optionally extract theme CSS so blocks look identical on other sites. (Pro plan or higher.)
 * **Notes** — Add private notes to any block for future reference. (Solo plan or higher.)
+* **In-plugin sign-up / login** — Create a free account or log in right from the settings page — no copy-pasting keys required.
+* **Automatic local-to-cloud migration** — Any blocks you saved in local mode transfer to your account automatically the first time you connect.
+* **Usage meter** — See your current block usage against your plan limit at a glance.
 * **Works across sites** — Connect your account to sync blocks across completely separate WordPress installs.
 * **No multisite required** — Works on any standard WordPress installation.
 * **Block context menu** — Right-click any block and choose "Save to BlockVault".
@@ -76,10 +79,10 @@ Built with `@wordpress/scripts`. The unminified source lives in the `src/` direc
 
 == Installation ==
 
-1. Upload the `perastra-blockvault` folder to `/wp-content/plugins/`
+1. Upload the `perastra-blockvault` folder to `/wp-content/plugins/` (or install from the Plugins screen)
 2. Activate the plugin through the Plugins menu
-3. Open the Gutenberg editor — find BlockVault in the sidebar
-4. (Optional) Enter your API key in BlockVault settings to sync across sites
+3. Open the Gutenberg editor — find BlockVault in the sidebar. You can start saving blocks immediately in local mode.
+4. (Optional) Go to Settings → BlockVault and create a free account, or log in with an existing one. Any blocks you already saved locally will be migrated to your account automatically.
 
 == Frequently Asked Questions ==
 
@@ -109,11 +112,13 @@ PerAstra BlockVault is developed and maintained by PerAstra. The BlockVault clou
 
 == Screenshots ==
 
-1. BlockVault sidebar in the Gutenberg editor with saved blocks
-2. Save modal with name and category fields
-3. Block library with search, filter, and sort options
-4. Settings page for API key configuration
-5. Right-click context menu integration
+1. BlockVault sidebar in the Gutenberg editor showing the saved block library
+2. Save modal with name, category, notes, and CSS-capture options
+3. Sidebar with search, category / collection filters, sort, and the usage meter
+4. Inline block editor — rename, change category, add notes, assign to a collection
+5. Bulk-select mode with multi-delete and duplicate actions
+6. Settings page with in-plugin sign-up and log-in tabs (no manual key entry needed)
+7. Right-click block toolbar integration — "Save to BlockVault"
 
 == Changelog ==
 
@@ -125,7 +130,11 @@ PerAstra BlockVault is developed and maintained by PerAstra. The BlockVault clou
 * New: Bulk actions — multi-select blocks to delete (with confirmation dialog) or duplicate.
 * New: Duplicate — clone any saved block in one click.
 * New: Keyboard shortcut — save the current selection without reaching for the mouse.
-* New: CSS capture (opt-in) — fetch the real theme CSS for a block so it renders identically on other sites (Solo plan and up).
+* New: CSS capture (opt-in) — fetch the real theme CSS for a block so it renders identically on other sites (Pro plan and up).
+* New: In-plugin account creation / log-in on the settings page — no more copy-pasting an API key.
+* New: Automatic local-to-cloud migration — blocks saved before you connect an account transfer over on your first sync.
+* New: Usage meter in the sidebar showing blocks used vs plan limit.
+* New: Filter the library by Favorites or by Collection.
 * New: Success flash animation when a block is saved or inserted.
 * Improved: Onboarding empty-state with clearer guidance for first-time users.
 * Improved: Plugin renamed to "PerAstra BlockVault" with the `perastra-blockvault` slug and matching code prefixes.
