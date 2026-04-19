@@ -67,15 +67,47 @@ No data is sent when using local mode (no API key configured).
 
 = Source Code & Development =
 
-The full source code (including unminified JavaScript and build tools) is hosted publicly at:
+The full unminified source and the build tooling required to regenerate the compiled files are both included inside the plugin zip AND hosted publicly on GitHub.
 
 * Source repository: [https://github.com/Samuel-Gassama/perastra-blockvault](https://github.com/Samuel-Gassama/perastra-blockvault)
 
-To rebuild the production JavaScript bundle (`build/index.js`):
+= Source vs compiled files =
 
-`npm install && npm run build`
+The plugin zip contains both the original source and the compiled output:
 
-Built with `@wordpress/scripts`. The unminified source lives in the `src/` directory inside the plugin zip.
+* `src/` — original unminified JavaScript (React / JSX) and SCSS source. Everything the UI does is here.
+    * `src/index.js` — editor plugin entry point (registers the sidebar and context-menu integration)
+    * `src/components/` — sidebar, block list, block item, save modal
+    * `src/store/` — `@wordpress/data` Redux store
+    * `src/api/` — cloud API client, localStorage fallback, and the router between them
+    * `src/hooks/`, `src/utils/` — helpers for selected-block access, color/CSS resolution
+    * `src/style.scss` — sidebar styles
+* `build/` — compiled output loaded by WordPress. Not edited by hand. Includes:
+    * `build/index.js` (minified bundle of everything under `src/`)
+    * `build/style-index.css` and `build/style-index-rtl.css` (compiled from `src/style.scss`)
+    * `build/index.asset.php` (auto-generated dependency manifest)
+
+= Build requirements =
+
+* Node.js 18 or later
+* npm (comes with Node)
+
+The only build tool is [@wordpress/scripts](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-scripts/), the official WordPress build wrapper around webpack + Babel. No custom webpack or Babel config is used — the defaults from `@wordpress/scripts` are used verbatim.
+
+= Rebuilding the compiled files =
+
+From the plugin directory, run:
+
+`npm install`
+`npm run build`
+
+That produces the contents of `build/` from `src/`. Other available commands (defined in `package.json`):
+
+* `npm run start` — watch mode during development
+* `npm run lint:js` — lint JavaScript
+* `npm run lint:css` — lint SCSS
+
+No PHP compilation is required — all PHP files (`perastra-blockvault.php`, `uninstall.php`, `includes/*.php`) are the original human-readable source.
 
 == Installation ==
 
