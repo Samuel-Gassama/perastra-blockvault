@@ -38,7 +38,7 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 	const [ editCategory, setEditCategory ] = useState( '' );
 
 	const { insertBlocks } = useDispatch( blockEditorStore );
-	const { deleteBlock, updateBlock, toggleFavorite } = useDispatch( STORE_NAME );
+	const { deleteBlock, updateBlock, toggleFavorite, addBlockToCollection, removeBlockFromCollection } = useDispatch( STORE_NAME );
 	const { createSuccessNotice, createErrorNotice, createWarningNotice } =
 		useDispatch( noticesStore );
 
@@ -56,7 +56,7 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 				createErrorNotice(
 					__(
 						'Could not parse block markup. The block may be from an unsupported plugin.',
-						'blockvault'
+						'perastra-blockvault'
 					),
 					{ type: 'snackbar' }
 				);
@@ -87,14 +87,14 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 			setFlash( true );
 			setTimeout( () => setFlash( false ), 900 );
 			createSuccessNotice(
-				`"${ block.name }" ${ __( 'inserted.', 'blockvault' ) }${ block.css ? ' ' + __( '(with styles)', 'blockvault' ) : '' }`,
+				`"${ block.name }" ${ __( 'inserted.', 'perastra-blockvault' ) }${ block.css ? ' ' + __( '(with styles)', 'perastra-blockvault' ) : '' }`,
 				{ type: 'snackbar' }
 			);
 		} catch {
 			createErrorNotice(
 				__(
 					'Failed to insert block. It may require a plugin that is not active on this site.',
-					'blockvault'
+					'perastra-blockvault'
 				),
 				{ type: 'snackbar' }
 			);
@@ -107,13 +107,13 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 			createSuccessNotice(
 				`"${ block.name }" ${ __(
 					'removed from library.',
-					'blockvault'
+					'perastra-blockvault'
 				) }`,
 				{ type: 'snackbar' }
 			);
 		} catch {
 			createErrorNotice(
-				__( 'Failed to delete block.', 'blockvault' ),
+				__( 'Failed to delete block.', 'perastra-blockvault' ),
 				{ type: 'snackbar' }
 			);
 		}
@@ -130,7 +130,7 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 	const handleFavorite = async () => {
 		if ( plan === 'free' ) {
 			createWarningNotice(
-				__( 'Favorites require a Solo plan or higher.', 'blockvault' ),
+				__( 'Favorites require a Solo plan or higher.', 'perastra-blockvault' ),
 				{ type: 'snackbar' }
 			);
 			return;
@@ -138,7 +138,7 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 		try {
 			await toggleFavorite( block.id );
 		} catch {
-			createErrorNotice( __( 'Failed to update favorite.', 'blockvault' ), { type: 'snackbar' } );
+			createErrorNotice( __( 'Failed to update favorite.', 'perastra-blockvault' ), { type: 'snackbar' } );
 		}
 	};
 
@@ -149,7 +149,11 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 		setEditName( block.name );
 		setEditCategory( block.category || '' );
 		setEditDescription( block.description || '' );
-		setEditCollection( '' );
+		// Pre-populate with the block's current collection (first one, since the UI is single-select).
+		const currentCollectionId = Array.isArray( block.collection_ids ) && block.collection_ids.length > 0
+			? block.collection_ids[ 0 ]
+			: '';
+		setEditCollection( currentCollectionId );
 		setEditing( true );
 	};
 
@@ -165,20 +169,34 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 			}
 			await updateBlock( block.id, data );
 
-			// Add to collection if selected.
-			if ( editCollection && plan !== 'free' ) {
-				const { addBlockToCollection } = await import( '../api/client' );
-				await addBlockToCollection( editCollection, block.id );
+			// Sync collection membership on paid plans.
+			// Treats the single-select UI as "the collection for this block":
+			// - if the selection differs from current, remove from old collection(s) and add to the new one.
+			// - if the selection is empty, remove from all collections.
+			if ( plan !== 'free' ) {
+				const currentIds = Array.isArray( block.collection_ids ) ? block.collection_ids : [];
+				const isInSelected = editCollection && currentIds.includes( editCollection );
+
+				if ( ! isInSelected ) {
+					// Remove from any existing collections.
+					for ( const id of currentIds ) {
+						await removeBlockFromCollection( id, block.id );
+					}
+					// Add to the newly selected one (if any).
+					if ( editCollection ) {
+						await addBlockToCollection( editCollection, block.id );
+					}
+				}
 			}
 
 			createSuccessNotice(
-				__( 'Block updated.', 'blockvault' ),
+				__( 'Block updated.', 'perastra-blockvault' ),
 				{ type: 'snackbar' }
 			);
 			setEditing( false );
 		} catch {
 			createErrorNotice(
-				__( 'Failed to update block.', 'blockvault' ),
+				__( 'Failed to update block.', 'perastra-blockvault' ),
 				{ type: 'snackbar' }
 			);
 		}
@@ -203,7 +221,7 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 						className="blockvault-block-item__edit-input"
 						value={ editName }
 						onChange={ ( e ) => setEditName( e.target.value ) }
-						placeholder={ __( 'Block name', 'blockvault' ) }
+						placeholder={ __( 'Block name', 'perastra-blockvault' ) }
 						autoFocus
 						onKeyDown={ ( e ) => { if ( e.key === 'Enter' ) handleEditSave(); if ( e.key === 'Escape' ) handleEditCancel(); } }
 					/>
@@ -212,7 +230,7 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 						className="blockvault-block-item__edit-input"
 						value={ editCategory }
 						onChange={ ( e ) => setEditCategory( e.target.value ) }
-						placeholder={ __( 'Category (optional)', 'blockvault' ) }
+						placeholder={ __( 'Category (optional)', 'perastra-blockvault' ) }
 						onKeyDown={ ( e ) => { if ( e.key === 'Enter' ) handleEditSave(); if ( e.key === 'Escape' ) handleEditCancel(); } }
 					/>
 					<input
@@ -220,7 +238,7 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 						className="blockvault-block-item__edit-input"
 						value={ editDescription }
 						onChange={ ( e ) => setEditDescription( e.target.value ) }
-						placeholder={ plan === 'free' ? __( 'Notes (Solo+ plan)', 'blockvault' ) : __( 'Notes (optional)', 'blockvault' ) }
+						placeholder={ plan === 'free' ? __( 'Notes (Solo+ plan)', 'perastra-blockvault' ) : __( 'Notes (optional)', 'perastra-blockvault' ) }
 						disabled={ plan === 'free' }
 						onKeyDown={ ( e ) => { if ( e.key === 'Enter' ) handleEditSave(); if ( e.key === 'Escape' ) handleEditCancel(); } }
 					/>
@@ -229,8 +247,9 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 							className="blockvault-block-item__edit-input"
 							value={ editCollection }
 							onChange={ ( e ) => setEditCollection( e.target.value ) }
+							aria-label={ __( 'Collection', 'perastra-blockvault' ) }
 						>
-							<option value="">{ __( 'Add to collection...', 'blockvault' ) }</option>
+							<option value="">{ __( 'No collection', 'perastra-blockvault' ) }</option>
 							{ collections.map( ( c ) => (
 								<option key={ c.id } value={ c.id }>{ c.name }</option>
 							) ) }
@@ -238,10 +257,10 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 					) }
 					<Flex gap={ 1 }>
 						<Button variant="primary" size="small" onClick={ handleEditSave }>
-							{ __( 'Save', 'blockvault' ) }
+							{ __( 'Save', 'perastra-blockvault' ) }
 						</Button>
 						<Button variant="tertiary" size="small" onClick={ handleEditCancel }>
-							{ __( 'Cancel', 'blockvault' ) }
+							{ __( 'Cancel', 'perastra-blockvault' ) }
 						</Button>
 					</Flex>
 				</div>
@@ -269,7 +288,7 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 							type="button"
 							className={ `blockvault-block-item__favorite${ block.is_favorite ? ' is-active' : '' }` }
 							onClick={ handleFavorite }
-							title={ block.is_favorite ? __( 'Unpin', 'blockvault' ) : __( 'Pin to top', 'blockvault' ) }
+							title={ block.is_favorite ? __( 'Unpin', 'perastra-blockvault' ) : __( 'Pin to top', 'perastra-blockvault' ) }
 						>
 							{ block.is_favorite ? '\u2605' : '\u2606' }
 						</button>
@@ -283,8 +302,8 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 						<span>
 							{ block.block_count }{ ' ' }
 							{ block.block_count !== 1
-								? __( 'blocks', 'blockvault' )
-								: __( 'block', 'blockvault' ) }
+								? __( 'blocks', 'perastra-blockvault' )
+								: __( 'block', 'perastra-blockvault' ) }
 						</span>
 						{ block.category && (
 							<span className="blockvault-block-item__category">
@@ -303,8 +322,8 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 							onClick={ () => setExpanded( ! expanded ) }
 						>
 							{ expanded
-								? __( 'Hide preview', 'blockvault' )
-								: __( 'Show preview', 'blockvault' ) }
+								? __( 'Hide preview', 'perastra-blockvault' )
+								: __( 'Show preview', 'perastra-blockvault' ) }
 						</button>
 					) }
 					{ expanded && preview && (
@@ -321,7 +340,7 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 							size="small"
 							onClick={ handleInsert }
 						>
-							{ __( 'Insert', 'blockvault' ) }
+							{ __( 'Insert', 'perastra-blockvault' ) }
 						</Button>
 					</FlexItem>
 					<FlexItem>
@@ -330,7 +349,7 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 							size="small"
 							onClick={ handleEdit }
 						>
-							{ __( 'Edit', 'blockvault' ) }
+							{ __( 'Edit', 'perastra-blockvault' ) }
 						</Button>
 					</FlexItem>
 					<FlexItem>
@@ -339,7 +358,7 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 							size="small"
 							onClick={ handleDuplicate }
 						>
-							{ __( 'Duplicate', 'blockvault' ) }
+							{ __( 'Duplicate', 'perastra-blockvault' ) }
 						</Button>
 					</FlexItem>
 					<FlexItem>
@@ -350,14 +369,14 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 									size="small"
 									onClick={ handleDelete }
 								>
-									{ __( 'Confirm', 'blockvault' ) }
+									{ __( 'Confirm', 'perastra-blockvault' ) }
 								</Button>
 								<Button
 									variant="tertiary"
 									size="small"
 									onClick={ () => setConfirming( false ) }
 								>
-									{ __( 'Cancel', 'blockvault' ) }
+									{ __( 'Cancel', 'perastra-blockvault' ) }
 								</Button>
 							</Flex>
 						) : (
@@ -367,7 +386,7 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 								size="small"
 								onClick={ () => setConfirming( true ) }
 							>
-								{ __( 'Delete', 'blockvault' ) }
+								{ __( 'Delete', 'perastra-blockvault' ) }
 							</Button>
 						) }
 					</FlexItem>

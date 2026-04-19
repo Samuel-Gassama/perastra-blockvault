@@ -70,13 +70,13 @@ export default function Sidebar( { onRequestSave } ) {
 	}, [ initialized, fetchBlocks ] );
 
 	const categoryOptions = [
-		{ label: __( 'All Categories', 'blockvault' ), value: '' },
-		{ label: '\u2605 ' + __( 'Favorites', 'blockvault' ), value: '__favorites__' },
+		{ label: __( 'All Categories', 'perastra-blockvault' ), value: '' },
+		{ label: '\u2605 ' + __( 'Favorites', 'perastra-blockvault' ), value: '__favorites__' },
 		...categories.map( ( c ) => ( { label: c, value: c } ) ),
 	];
 
 	const collectionOptions = [
-		{ label: __( 'All Collections', 'blockvault' ), value: '' },
+		{ label: __( 'All Collections', 'perastra-blockvault' ), value: '' },
 		...( collections || [] ).map( ( c ) => ( {
 			label: `${ c.name } (${ c.block_count || 0 })`,
 			value: c.id,
@@ -84,14 +84,14 @@ export default function Sidebar( { onRequestSave } ) {
 	];
 
 	const sortOptions = [
-		{ label: __( 'Newest First', 'blockvault' ), value: 'newest' },
-		{ label: __( 'Oldest First', 'blockvault' ), value: 'oldest' },
+		{ label: __( 'Newest First', 'perastra-blockvault' ), value: 'newest' },
+		{ label: __( 'Oldest First', 'perastra-blockvault' ), value: 'oldest' },
 		{
-			label: __( 'Alphabetical (A-Z)', 'blockvault' ),
+			label: __( 'Alphabetical (A-Z)', 'perastra-blockvault' ),
 			value: 'alpha_asc',
 		},
 		{
-			label: __( 'Alphabetical (Z-A)', 'blockvault' ),
+			label: __( 'Alphabetical (Z-A)', 'perastra-blockvault' ),
 			value: 'alpha_desc',
 		},
 	];
@@ -106,7 +106,7 @@ export default function Sidebar( { onRequestSave } ) {
 	const handleDuplicate = useCallback( async ( block ) => {
 		try {
 			await saveBlock( {
-				name: block.name + ' (' + __( 'Copy', 'blockvault' ) + ')',
+				name: block.name + ' (' + __( 'Copy', 'perastra-blockvault' ) + ')',
 				markup: block.markup,
 				category: block.category || '',
 			} );
@@ -120,14 +120,14 @@ export default function Sidebar( { onRequestSave } ) {
 		try {
 			await createCollection( newCollectionName.trim() );
 			createSuccessNotice(
-				`"${ newCollectionName.trim() }" ${ __( 'collection created.', 'blockvault' ) }`,
+				`"${ newCollectionName.trim() }" ${ __( 'collection created.', 'perastra-blockvault' ) }`,
 				{ type: 'snackbar' }
 			);
 			setNewCollectionName( '' );
 			setShowNewCollection( false );
 		} catch ( error ) {
 			createErrorNotice(
-				error?.message || __( 'Failed to create collection.', 'blockvault' ),
+				error?.message || __( 'Failed to create collection.', 'perastra-blockvault' ),
 				{ type: 'snackbar' }
 			);
 		}
@@ -135,16 +135,16 @@ export default function Sidebar( { onRequestSave } ) {
 
 	const handleDeleteCollection = async ( id ) => {
 		// eslint-disable-next-line no-alert
-		if ( ! window.confirm( __( 'Delete this collection? Blocks inside will not be deleted.', 'blockvault' ) ) ) return;
+		if ( ! window.confirm( __( 'Delete this collection? Blocks inside will not be deleted.', 'perastra-blockvault' ) ) ) return;
 		try {
 			await deleteCollection( id );
 			createSuccessNotice(
-				__( 'Collection deleted.', 'blockvault' ),
+				__( 'Collection deleted.', 'perastra-blockvault' ),
 				{ type: 'snackbar' }
 			);
 		} catch {
 			createErrorNotice(
-				__( 'Failed to delete collection.', 'blockvault' ),
+				__( 'Failed to delete collection.', 'perastra-blockvault' ),
 				{ type: 'snackbar' }
 			);
 		}
@@ -153,7 +153,7 @@ export default function Sidebar( { onRequestSave } ) {
 	return (
 		<div className="blockvault-sidebar">
 			<PanelBody
-				title={ __( 'Save Blocks', 'blockvault' ) }
+				title={ __( 'Save Blocks', 'perastra-blockvault' ) }
 				initialOpen
 			>
 				<Button
@@ -163,14 +163,14 @@ export default function Sidebar( { onRequestSave } ) {
 					className="blockvault-sidebar__save-btn"
 				>
 					{ hasSelection
-						? `${ __( 'Save', 'blockvault' ) } ${ blocks.length } ${ blocks.length !== 1 ? __( 'Blocks', 'blockvault' ) : __( 'Block', 'blockvault' ) } ${ __( 'to Library', 'blockvault' ) }`
-						: __( 'Select blocks to save', 'blockvault' ) }
+						? `${ __( 'Save', 'perastra-blockvault' ) } ${ blocks.length } ${ blocks.length !== 1 ? __( 'Blocks', 'perastra-blockvault' ) : __( 'Block', 'perastra-blockvault' ) } ${ __( 'to Library', 'perastra-blockvault' ) }`
+						: __( 'Select blocks to save', 'perastra-blockvault' ) }
 				</Button>
 				{ ! hasSelection && (
 					<p className="blockvault-sidebar__hint">
 						{ __(
 							'Select one or more blocks in the editor, then click save.',
-							'blockvault'
+							'perastra-blockvault'
 						) }
 					</p>
 				) }
@@ -179,13 +179,13 @@ export default function Sidebar( { onRequestSave } ) {
 			<PanelBody
 				title={
 					initialized
-						? `${ __( 'My Library', 'blockvault' ) } (${ blockLimit !== Infinity ? `${ blockCount }/${ blockLimit }` : blockCount })`
-						: __( 'My Library', 'blockvault' )
+						? `${ __( 'My Library', 'perastra-blockvault' ) } (${ blockLimit !== Infinity ? `${ blockCount }/${ blockLimit }` : blockCount })`
+						: __( 'My Library', 'perastra-blockvault' )
 				}
 				initialOpen
 			>
 				<TextControl
-					placeholder={ __( 'Search blocks...', 'blockvault' ) }
+					placeholder={ __( 'Search blocks...', 'perastra-blockvault' ) }
 					value={ searchTerm }
 					onChange={ setSearchTerm }
 					className="blockvault-sidebar__search"
@@ -228,7 +228,7 @@ export default function Sidebar( { onRequestSave } ) {
 						{ showNewCollection ? (
 							<Flex gap={ 2 } align="flex-end" className="blockvault-sidebar__new-collection">
 								<TextControl
-									placeholder={ __( 'Collection name', 'blockvault' ) }
+									placeholder={ __( 'Collection name', 'perastra-blockvault' ) }
 									value={ newCollectionName }
 									onChange={ setNewCollectionName }
 									onKeyDown={ ( e ) => { if ( e.key === 'Enter' ) handleCreateCollection(); if ( e.key === 'Escape' ) setShowNewCollection( false ); } }
@@ -241,14 +241,14 @@ export default function Sidebar( { onRequestSave } ) {
 									disabled={ ! newCollectionName.trim() }
 									style={ { height: '32px' } }
 								>
-									{ __( 'Add', 'blockvault' ) }
+									{ __( 'Add', 'perastra-blockvault' ) }
 								</Button>
 								<Button
 									variant="tertiary"
 									onClick={ () => { setShowNewCollection( false ); setNewCollectionName( '' ); } }
 									style={ { height: '32px' } }
 								>
-									{ __( 'Cancel', 'blockvault' ) }
+									{ __( 'Cancel', 'perastra-blockvault' ) }
 								</Button>
 							</Flex>
 						) : (
@@ -258,7 +258,7 @@ export default function Sidebar( { onRequestSave } ) {
 									size="small"
 									onClick={ () => setShowNewCollection( true ) }
 								>
-									+ { __( 'New Collection', 'blockvault' ) }
+									+ { __( 'New Collection', 'perastra-blockvault' ) }
 								</Button>
 								{ collectionFilter && (
 									<Button
@@ -267,7 +267,7 @@ export default function Sidebar( { onRequestSave } ) {
 										isDestructive
 										onClick={ () => handleDeleteCollection( collectionFilter ) }
 									>
-										{ __( 'Delete', 'blockvault' ) }
+										{ __( 'Delete', 'perastra-blockvault' ) }
 									</Button>
 								) }
 							</Flex>
@@ -296,7 +296,7 @@ export default function Sidebar( { onRequestSave } ) {
 						</div>
 						<span className="blockvault-sidebar__usage-text">
 							{ blockCount }/{ blockLimit }{ ' ' }
-							{ __( 'blocks used', 'blockvault' ) }
+							{ __( 'blocks used', 'perastra-blockvault' ) }
 							{ atLimit && (
 								<>
 									{ ' — ' }
@@ -305,7 +305,7 @@ export default function Sidebar( { onRequestSave } ) {
 										target="_blank"
 										rel="noopener noreferrer"
 									>
-										{ __( 'Upgrade', 'blockvault' ) }
+										{ __( 'Upgrade', 'perastra-blockvault' ) }
 									</a>
 								</>
 							) }

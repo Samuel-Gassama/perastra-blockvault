@@ -5,7 +5,7 @@
 
 import { __ } from '@wordpress/i18n';
 
-const STORAGE_KEY = 'blockvault_blocks';
+const STORAGE_KEY = 'perastra_blockvault_blocks';
 const FREE_BLOCK_LIMIT = 10;
 
 function delay( ms = 300 ) {
@@ -56,7 +56,7 @@ function setStoredBlocks( blocks ) {
 			throw new Error(
 				__(
 					'Browser storage is full. Delete some blocks or connect a BlockVault cloud account for unlimited storage.',
-					'blockvault'
+					'perastra-blockvault'
 				)
 			);
 		}
@@ -81,7 +81,7 @@ export async function saveBlock( { name, markup, category = '' } ) {
 		throw new Error(
 			__(
 				'Free plan limit reached. Connect a BlockVault account for unlimited blocks.',
-				'blockvault'
+				'perastra-blockvault'
 			)
 		);
 	}
@@ -106,7 +106,7 @@ export async function updateBlock( id, data ) {
 	const blocks = getStoredBlocks();
 	const index = blocks.findIndex( ( b ) => b.id === id );
 	if ( index === -1 ) {
-		throw new Error( __( 'Block not found.', 'blockvault' ) );
+		throw new Error( __( 'Block not found.', 'perastra-blockvault' ) );
 	}
 	if ( data.name !== undefined ) blocks[ index ].name = data.name.trim();
 	if ( data.category !== undefined ) blocks[ index ].category = ( data.category || '' ).trim();
@@ -116,17 +116,17 @@ export async function updateBlock( id, data ) {
 }
 
 export async function toggleFavorite() {
-	throw new Error( __( 'Favorites require a paid plan.', 'blockvault' ) );
+	throw new Error( __( 'Favorites require a paid plan.', 'perastra-blockvault' ) );
 }
 
 export async function getAccountInfo() { return { plan: 'free', block_limit: 10, site_limit: 1 }; }
 export async function getCollections() { return []; }
-export async function createCollection() { throw new Error( __( 'Collections require a paid plan.', 'blockvault' ) ); }
-export async function deleteCollection() { throw new Error( __( 'Collections require a paid plan.', 'blockvault' ) ); }
-export async function addBlockToCollection() { throw new Error( __( 'Collections require a paid plan.', 'blockvault' ) ); }
-export async function removeBlockFromCollection() { throw new Error( __( 'Collections require a paid plan.', 'blockvault' ) ); }
+export async function createCollection() { throw new Error( __( 'Collections require a paid plan.', 'perastra-blockvault' ) ); }
+export async function deleteCollection() { throw new Error( __( 'Collections require a paid plan.', 'perastra-blockvault' ) ); }
+export async function addBlockToCollection() { throw new Error( __( 'Collections require a paid plan.', 'perastra-blockvault' ) ); }
+export async function removeBlockFromCollection() { throw new Error( __( 'Collections require a paid plan.', 'perastra-blockvault' ) ); }
 export async function getRevisions() { return []; }
-export async function restoreRevision() { throw new Error( __( 'Revision history requires the Agency plan.', 'blockvault' ) ); }
+export async function restoreRevision() { throw new Error( __( 'Revision history requires the Agency plan.', 'perastra-blockvault' ) ); }
 
 export async function deleteBlock( id ) {
 	await delay( 150 );

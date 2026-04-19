@@ -1,6 +1,6 @@
 <?php
 /**
- * BlockVault REST API proxy endpoints.
+ * PerAstra BlockVault REST API proxy endpoints.
  *
  * These proxy requests to the BlockVault cloud API.
  * When no API key is configured, the frontend uses localStorage directly.
@@ -10,14 +10,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class BlockVault_REST {
+class PerAstra_BlockVault_REST {
 
 	public static function init() {
 		add_action( 'rest_api_init', array( __CLASS__, 'register_routes' ) );
 	}
 
 	public static function register_routes() {
-		$namespace = 'blockvault/v1';
+		$namespace = 'perastra-blockvault/v1';
 
 		register_rest_route( $namespace, '/blocks', array(
 			array(
@@ -69,8 +69,8 @@ class BlockVault_REST {
 	public static function check_permissions( $request ) {
 		if ( ! current_user_can( 'edit_posts' ) ) {
 			return new WP_Error(
-				'blockvault_forbidden',
-				__( 'You do not have permission to access the block library.', 'blockvault' ),
+				'perastra_blockvault_forbidden',
+				__( 'You do not have permission to access the block library.', 'perastra-blockvault' ),
 				array( 'status' => 403 )
 			);
 		}
@@ -82,16 +82,16 @@ class BlockVault_REST {
 	 * Proxy GET /blocks to the cloud API.
 	 */
 	public static function get_blocks( $request ) {
-		$api_key = get_option( 'blockvault_api_key', '' );
+		$api_key = get_option( 'perastra_blockvault_api_key', '' );
 
 		if ( empty( $api_key ) ) {
 			return new WP_REST_Response( array(
 				'error'   => 'no_api_key',
-				'message' => __( 'No API key configured. Using local mode.', 'blockvault' ),
+				'message' => __( 'No API key configured. Using local mode.', 'perastra-blockvault' ),
 			), 200 );
 		}
 
-		$api_url = trailingslashit( get_option( 'blockvault_api_url', 'https://blockvault-api-production.up.railway.app' ) );
+		$api_url = trailingslashit( get_option( 'perastra_blockvault_api_url', 'https://blockvault-api-production.up.railway.app' ) );
 
 		$response = wp_remote_get( $api_url . 'blocks', array(
 			'headers' => self::get_api_headers(),
@@ -105,16 +105,16 @@ class BlockVault_REST {
 	 * Proxy POST /blocks to the cloud API.
 	 */
 	public static function save_block( $request ) {
-		$api_key = get_option( 'blockvault_api_key', '' );
+		$api_key = get_option( 'perastra_blockvault_api_key', '' );
 
 		if ( empty( $api_key ) ) {
 			return new WP_REST_Response( array(
 				'error'   => 'no_api_key',
-				'message' => __( 'No API key configured. Using local mode.', 'blockvault' ),
+				'message' => __( 'No API key configured. Using local mode.', 'perastra-blockvault' ),
 			), 200 );
 		}
 
-		$api_url = trailingslashit( get_option( 'blockvault_api_url', 'https://blockvault-api-production.up.railway.app' ) );
+		$api_url = trailingslashit( get_option( 'perastra_blockvault_api_url', 'https://blockvault-api-production.up.railway.app' ) );
 
 		$response = wp_remote_post( $api_url . 'blocks', array(
 			'headers' => self::get_api_headers(),
@@ -133,16 +133,16 @@ class BlockVault_REST {
 	 * Proxy DELETE /blocks/:id to the cloud API.
 	 */
 	public static function delete_block( $request ) {
-		$api_key = get_option( 'blockvault_api_key', '' );
+		$api_key = get_option( 'perastra_blockvault_api_key', '' );
 
 		if ( empty( $api_key ) ) {
 			return new WP_REST_Response( array(
 				'error'   => 'no_api_key',
-				'message' => __( 'No API key configured. Using local mode.', 'blockvault' ),
+				'message' => __( 'No API key configured. Using local mode.', 'perastra-blockvault' ),
 			), 200 );
 		}
 
-		$api_url = trailingslashit( get_option( 'blockvault_api_url', 'https://blockvault-api-production.up.railway.app' ) );
+		$api_url = trailingslashit( get_option( 'perastra_blockvault_api_url', 'https://blockvault-api-production.up.railway.app' ) );
 
 		$response = wp_remote_request( $api_url . 'blocks/' . rawurlencode( $request->get_param( 'id' ) ), array(
 			'method'  => 'DELETE',
@@ -158,7 +158,7 @@ class BlockVault_REST {
 	 */
 	private static function get_api_headers() {
 		return array(
-			'X-API-Key'    => get_option( 'blockvault_api_key', '' ),
+			'X-API-Key'    => get_option( 'perastra_blockvault_api_key', '' ),
 			'X-Site-URL'   => site_url(),
 			'Content-Type' => 'application/json',
 		);
@@ -171,7 +171,7 @@ class BlockVault_REST {
 		if ( is_wp_error( $response ) ) {
 			return new WP_REST_Response( array(
 				'error'   => 'connection_failed',
-				'message' => __( 'Could not connect to BlockVault cloud. Try again later.', 'blockvault' ),
+				'message' => __( 'Could not connect to BlockVault cloud. Try again later.', 'perastra-blockvault' ),
 			), 502 );
 		}
 
@@ -182,7 +182,7 @@ class BlockVault_REST {
 		if ( json_last_error() !== JSON_ERROR_NONE ) {
 			return new WP_REST_Response( array(
 				'error'   => 'invalid_response',
-				'message' => __( 'Invalid response from BlockVault cloud.', 'blockvault' ),
+				'message' => __( 'Invalid response from BlockVault cloud.', 'perastra-blockvault' ),
 			), 502 );
 		}
 

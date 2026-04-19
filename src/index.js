@@ -43,7 +43,7 @@ function BlockVaultPlugin() {
 	const handleRequestSave = useCallback( () => {
 		if ( ! hasSelection ) {
 			createWarningNotice(
-				__( 'Select one or more blocks first.', 'blockvault' ),
+				__( 'Select one or more blocks first.', 'perastra-blockvault' ),
 				{ type: 'snackbar' }
 			);
 			return;
@@ -70,12 +70,12 @@ function BlockVaultPlugin() {
 				target="blockvault-sidebar"
 				icon={ <VaultIcon /> }
 			>
-				{ __( 'BlockVault Library', 'blockvault' ) }
+				{ __( 'BlockVault Library', 'perastra-blockvault' ) }
 			</PluginSidebarMoreMenuItem>
 
 			<PluginSidebar
 				name="blockvault-sidebar"
-				title={ __( 'BlockVault', 'blockvault' ) }
+				title={ __( 'BlockVault', 'perastra-blockvault' ) }
 				icon={ <VaultIcon /> }
 			>
 				<Sidebar onRequestSave={ handleRequestSave } />
@@ -83,7 +83,7 @@ function BlockVaultPlugin() {
 
 			<PluginBlockSettingsMenuItem
 				icon={ <VaultIcon /> }
-				label={ __( 'Save to BlockVault', 'blockvault' ) }
+				label={ __( 'Save to BlockVault', 'perastra-blockvault' ) }
 				onClick={ handleRequestSave }
 			/>
 
@@ -100,6 +100,6 @@ function BlockVaultPlugin() {
 	);
 }
 
-registerPlugin( 'blockvault', {
+registerPlugin( 'perastra-blockvault', {
 	render: BlockVaultPlugin,
 } );

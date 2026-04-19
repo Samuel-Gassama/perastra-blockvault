@@ -79,7 +79,7 @@ export default function SaveModal( {
 
 			await saveBlock( data );
 			createSuccessNotice(
-				`"${ name.trim() }" ${ __( 'saved to BlockVault', 'blockvault' ) } (${ blockCount } ${ blockCount !== 1 ? __( 'blocks', 'blockvault' ) : __( 'block', 'blockvault' ) })${ css ? ' ' + __( '+ styles captured', 'blockvault' ) : '' }`,
+				`"${ name.trim() }" ${ __( 'saved to BlockVault', 'perastra-blockvault' ) } (${ blockCount } ${ blockCount !== 1 ? __( 'blocks', 'perastra-blockvault' ) : __( 'block', 'perastra-blockvault' ) })${ css ? ' ' + __( '+ styles captured', 'perastra-blockvault' ) : '' }`,
 				{ type: 'snackbar' }
 			);
 			onClose();
@@ -88,7 +88,7 @@ export default function SaveModal( {
 				error?.message ||
 					__(
 						'Failed to save block to BlockVault.',
-						'blockvault'
+						'perastra-blockvault'
 					),
 				{ type: 'snackbar' }
 			);
@@ -97,61 +97,61 @@ export default function SaveModal( {
 
 	return (
 		<Modal
-			title={ __( 'Save to BlockVault', 'blockvault' ) }
+			title={ __( 'Save to BlockVault', 'perastra-blockvault' ) }
 			onRequestClose={ onClose }
 			className="blockvault-save-modal"
 		>
 			{ atLimit && (
 				<Notice status="warning" isDismissible={ false }>
 					<strong>
-						{ `${ __( 'Free plan limit reached', 'blockvault' ) } (${ blockUsed }/${ blockLimit })` }
+						{ `${ __( 'Free plan limit reached', 'perastra-blockvault' ) } (${ blockUsed }/${ blockLimit })` }
 					</strong>
 					<br />
 					{ __(
 						'Connect a BlockVault account for unlimited blocks and cross-site sync.',
-						'blockvault'
+						'perastra-blockvault'
 					) }
 				</Notice>
 			) }
 
 			<TextControl
-				label={ __( 'Name', 'blockvault' ) }
+				label={ __( 'Name', 'perastra-blockvault' ) }
 				value={ name }
 				onChange={ setName }
 				placeholder={ __(
 					'My awesome section',
-					'blockvault'
+					'perastra-blockvault'
 				) }
 				autoFocus
 				disabled={ atLimit }
 			/>
 			<TextControl
-				label={ __( 'Category (optional)', 'blockvault' ) }
+				label={ __( 'Category (optional)', 'perastra-blockvault' ) }
 				value={ category }
 				onChange={ setCategory }
 				placeholder={ __(
 					'e.g. Heroes, Footers, CTAs',
-					'blockvault'
+					'perastra-blockvault'
 				) }
 				help={
 					existingCategories.length > 0
-						? `${ __( 'Existing', 'blockvault' ) }: ${ existingCategories.join( ', ' ) }`
+						? `${ __( 'Existing', 'perastra-blockvault' ) }: ${ existingCategories.join( ', ' ) }`
 						: undefined
 				}
 				disabled={ atLimit }
 			/>
 			<TextControl
-				label={ isPaid ? __( 'Notes (optional)', 'blockvault' ) : __( 'Notes (Solo+)', 'blockvault' ) }
+				label={ isPaid ? __( 'Notes (optional)', 'perastra-blockvault' ) : __( 'Notes (Solo+)', 'perastra-blockvault' ) }
 				value={ description }
 				onChange={ setDescription }
-				placeholder={ isPaid ? __( 'Internal notes about this block', 'blockvault' ) : __( 'Upgrade to Solo to add notes', 'blockvault' ) }
+				placeholder={ isPaid ? __( 'Internal notes about this block', 'perastra-blockvault' ) : __( 'Upgrade to Solo to add notes', 'perastra-blockvault' ) }
 				disabled={ atLimit || ! isPaid }
 			/>
 
 			{ isPro && ! atLimit && (
 				<CheckboxControl
-					label={ __( 'Capture CSS styles', 'blockvault' ) }
-					help={ __( 'Extract theme CSS so the block looks identical on other sites.', 'blockvault' ) }
+					label={ __( 'Capture CSS styles', 'perastra-blockvault' ) }
+					help={ __( 'Extract theme CSS so the block looks identical on other sites.', 'perastra-blockvault' ) }
 					checked={ captureCSS }
 					onChange={ setCaptureCSS }
 					__nextHasNoMarginBottom
@@ -162,18 +162,18 @@ export default function SaveModal( {
 				<p className="blockvault-save-modal__info">
 					{ blockCount }{ ' ' }
 					{ blockCount !== 1
-						? __( 'blocks', 'blockvault' )
-						: __( 'block', 'blockvault' ) }{ ' ' }
-					{ __( 'will be saved.', 'blockvault' ) }
+						? __( 'blocks', 'perastra-blockvault' )
+						: __( 'block', 'perastra-blockvault' ) }{ ' ' }
+					{ __( 'will be saved.', 'perastra-blockvault' ) }
 					{ isPro && captureCSS && (
 						<span className="blockvault-save-modal__css-badge">
-							{ ' ' }{ __( '+ CSS styles will be captured', 'blockvault' ) }
+							{ ' ' }{ __( '+ CSS styles will be captured', 'perastra-blockvault' ) }
 						</span>
 					) }
 					{ blockLimit !== Infinity && (
 						<span className="blockvault-save-modal__usage">
 							{ ' ' }({ blockUsed }/{ blockLimit }{ ' ' }
-							{ __( 'used', 'blockvault' ) })
+							{ __( 'used', 'perastra-blockvault' ) })
 						</span>
 					) }
 				</p>
@@ -183,8 +183,8 @@ export default function SaveModal( {
 				<FlexItem>
 					<Button variant="tertiary" onClick={ onClose }>
 						{ atLimit
-							? __( 'Close', 'blockvault' )
-							: __( 'Cancel', 'blockvault' ) }
+							? __( 'Close', 'perastra-blockvault' )
+							: __( 'Cancel', 'perastra-blockvault' ) }
 					</Button>
 				</FlexItem>
 				{ ! atLimit && (
@@ -196,8 +196,8 @@ export default function SaveModal( {
 							disabled={ isSaving || ! name.trim() }
 						>
 							{ isSaving
-								? __( 'Saving...', 'blockvault' )
-								: __( 'Save to Library', 'blockvault' ) }
+								? __( 'Saving...', 'perastra-blockvault' )
+								: __( 'Save to Library', 'perastra-blockvault' ) }
 						</Button>
 					</FlexItem>
 				) }

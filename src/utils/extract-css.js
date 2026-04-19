@@ -12,7 +12,7 @@
  * Pro+ plan feature.
  */
 
-/* global blockvaultSettings */
+/* global perastraBlockvaultSettings */
 
 /**
  * Get the document where blocks live (handles iframe editor).
@@ -69,7 +69,7 @@ function collectClassesFromMarkup( markup ) {
  */
 async function fetchFrontendStyles() {
 	// Get the current page's frontend URL.
-	const siteUrl = blockvaultSettings?.siteUrl || '';
+	const siteUrl = perastraBlockvaultSettings?.siteUrl || '';
 	if ( ! siteUrl ) return { stylesheetUrls: [], inlineStyles: [] };
 
 	// Get the current post permalink from WordPress data.

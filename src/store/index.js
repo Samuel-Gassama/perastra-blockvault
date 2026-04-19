@@ -21,7 +21,7 @@ const DEFAULT_STATE = {
 	error: '',
 };
 
-const STORE_NAME = 'blockvault/library';
+const STORE_NAME = 'perastra-blockvault/library';
 
 const store = createReduxStore( STORE_NAME, {
 	reducer( state = DEFAULT_STATE, action ) {
@@ -40,10 +40,17 @@ const store = createReduxStore( STORE_NAME, {
 					error: '',
 				};
 			case 'UPDATE_BLOCK':
+				// Merge (not replace) so fields the PATCH response omits
+				// — e.g. `collection_ids`, which is only hydrated on GET
+				// /blocks via a separate junction-table join — survive the
+				// update. Without this merge, toggling favorite / editing
+				// a block strips its collection membership from local state
+				// and it disappears from any active collection filter until
+				// a full refetch.
 				return {
 					...state,
 					blocks: state.blocks.map( ( b ) =>
-						b.id === action.block.id ? action.block : b
+						b.id === action.block.id ? { ...b, ...action.block } : b
 					),
 				};
 			case 'REMOVE_BLOCK': {
@@ -82,7 +89,12 @@ const store = createReduxStore( STORE_NAME, {
 			case 'REMOVE_COLLECTION': {
 				const newCollections = state.collections.filter( ( c ) => c.id !== action.id );
 				const cf = state.collectionFilter === action.id ? '' : state.collectionFilter;
-				return { ...state, collections: newCollections, collectionFilter: cf };
+				// Strip the deleted collection id from every block's collection_ids.
+				const blocks = state.blocks.map( ( b ) => {
+					if ( ! Array.isArray( b.collection_ids ) || ! b.collection_ids.includes( action.id ) ) return b;
+					return { ...b, collection_ids: b.collection_ids.filter( ( id ) => id !== action.id ) };
+				} );
+				return { ...state, blocks, collections: newCollections, collectionFilter: cf };
 			}
 			case 'SET_COLLECTION_FILTER':
 				return { ...state, collectionFilter: action.collectionFilter };
@@ -92,6 +104,25 @@ const store = createReduxStore( STORE_NAME, {
 					blocks: state.blocks.map( ( b ) =>
 						b.id === action.id ? { ...b, is_favorite: ! b.is_favorite } : b
 					),
+				};
+			case 'ADD_BLOCK_TO_COLLECTION':
+				return {
+					...state,
+					blocks: state.blocks.map( ( b ) => {
+						if ( b.id !== action.blockId ) return b;
+						const existing = Array.isArray( b.collection_ids ) ? b.collection_ids : [];
+						if ( existing.includes( action.collectionId ) ) return b;
+						return { ...b, collection_ids: [ ...existing, action.collectionId ] };
+					} ),
+				};
+			case 'REMOVE_BLOCK_FROM_COLLECTION':
+				return {
+					...state,
+					blocks: state.blocks.map( ( b ) => {
+						if ( b.id !== action.blockId ) return b;
+						const existing = Array.isArray( b.collection_ids ) ? b.collection_ids : [];
+						return { ...b, collection_ids: existing.filter( ( id ) => id !== action.collectionId ) };
+					} ),
 				};
 			case 'SET_ERROR':
 				return { ...state, error: action.error };
@@ -120,15 +151,15 @@ const store = createReduxStore( STORE_NAME, {
 					dispatch( { type: 'SET_COLLECTIONS', collections } );
 
 					// Set plan from API (most accurate), fallback to PHP setting.
-					/* global blockvaultSettings */
-					const plan = accountInfo?.plan || blockvaultSettings?.plan || 'free';
+					/* global perastraBlockvaultSettings */
+					const plan = accountInfo?.plan || perastraBlockvaultSettings?.plan || 'free';
 					dispatch( { type: 'SET_PLAN', plan } );
 				} catch ( error ) {
 					const message =
 						error?.message ||
 						__(
 							'Failed to load your block library.',
-							'blockvault'
+							'perastra-blockvault'
 						);
 					dispatch( { type: 'SET_ERROR', error: message } );
 					// eslint-disable-next-line no-console
@@ -219,6 +250,20 @@ const store = createReduxStore( STORE_NAME, {
 			};
 		},
 
+		addBlockToCollection( collectionId, blockId ) {
+			return async ( { dispatch } ) => {
+				await api.addBlockToCollection( collectionId, blockId );
+				dispatch( { type: 'ADD_BLOCK_TO_COLLECTION', collectionId, blockId } );
+			};
+		},
+
+		removeBlockFromCollection( collectionId, blockId ) {
+			return async ( { dispatch } ) => {
+				await api.removeBlockFromCollection( collectionId, blockId );
+				dispatch( { type: 'REMOVE_BLOCK_FROM_COLLECTION', collectionId, blockId } );
+			};
+		},
+
 		setCollectionFilter( collectionFilter ) {
 			return { type: 'SET_COLLECTION_FILTER', collectionFilter };
 		},
@@ -263,6 +308,14 @@ const store = createReduxStore( STORE_NAME, {
 						( b ) => b.category === categoryFilter
 					);
 				}
+			}
+
+			if ( collectionFilter ) {
+				blocks = blocks.filter(
+					( b ) =>
+						Array.isArray( b.collection_ids ) &&
+						b.collection_ids.includes( collectionFilter )
+				);
 			}
 
 			// Sort blocks.

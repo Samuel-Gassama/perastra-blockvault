@@ -1,7 +1,15 @@
 {
-	"name": "blockvault",
-	"version": "1.0.0",
-	"description": "A personal cloud library for Gutenberg blocks.",
+	"name": "perastra-blockvault",
+	"version": "1.1.0",
+	"description": "PerAstra BlockVault — a personal cloud library for Gutenberg blocks.",
+	"author": "PerAstra",
+	"license": "GPL-2.0-or-later",
+	"homepage": "https://block-vault.com",
+	"bugs": "https://perastra.dev/support",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Samuel-Gassama/perastra-blockvault.git"
+	},
 	"scripts": {
 		"build": "wp-scripts build",
 		"start": "wp-scripts start",

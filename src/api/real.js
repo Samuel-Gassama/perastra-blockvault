@@ -2,7 +2,7 @@
  * Real API client — talks to the BlockVault cloud API.
  */
 
-/* global blockvaultSettings */
+/* global perastraBlockvaultSettings */
 
 import { __ } from '@wordpress/i18n';
 
@@ -11,13 +11,13 @@ const REQUEST_TIMEOUT_MS = 15000;
 function getHeaders() {
 	return {
 		'Content-Type': 'application/json',
-		'X-API-Key': blockvaultSettings?.apiKey || '',
-		'X-Site-URL': blockvaultSettings?.siteUrl || '',
+		'X-API-Key': perastraBlockvaultSettings?.apiKey || '',
+		'X-Site-URL': perastraBlockvaultSettings?.siteUrl || '',
 	};
 }
 
 function getBaseUrl() {
-	return ( blockvaultSettings?.apiUrl || 'https://blockvault-api-production.up.railway.app' ).replace(
+	return ( perastraBlockvaultSettings?.apiUrl || 'https://blockvault-api-production.up.railway.app' ).replace(
 		/\/$/,
 		''
 	);
@@ -46,7 +46,7 @@ async function apiFetch( url, options = {} ) {
 			throw new Error(
 				__(
 					'Invalid API key. Check your key in Settings > BlockVault.',
-					'blockvault'
+					'perastra-blockvault'
 				)
 			);
 		}
@@ -63,7 +63,7 @@ async function apiFetch( url, options = {} ) {
 				detail ||
 					__(
 						'Access denied. Your plan may not support this feature.',
-						'blockvault'
+						'perastra-blockvault'
 					)
 			);
 		}
@@ -72,7 +72,7 @@ async function apiFetch( url, options = {} ) {
 			throw new Error(
 				__(
 					'Too many requests. Please wait a moment and try again.',
-					'blockvault'
+					'perastra-blockvault'
 				)
 			);
 		}
@@ -87,7 +87,7 @@ async function apiFetch( url, options = {} ) {
 			}
 			throw new Error(
 				detail ||
-					`${ __( 'Server error', 'blockvault' ) }: ${ res.status }`
+					`${ __( 'Server error', 'perastra-blockvault' ) }: ${ res.status }`
 			);
 		}
 
@@ -99,7 +99,7 @@ async function apiFetch( url, options = {} ) {
 			throw new Error(
 				__(
 					'Request timed out. Check your internet connection.',
-					'blockvault'
+					'perastra-blockvault'
 				)
 			);
 		}
@@ -108,7 +108,7 @@ async function apiFetch( url, options = {} ) {
 			throw new Error(
 				__(
 					'Could not connect to BlockVault. Check your internet connection or try again later.',
-					'blockvault'
+					'perastra-blockvault'
 				)
 			);
 		}

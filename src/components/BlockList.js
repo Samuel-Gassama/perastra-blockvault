@@ -42,8 +42,8 @@ const BlockList = memo( function BlockList( { onDuplicate } ) {
 		// eslint-disable-next-line no-alert
 		if ( ! window.confirm(
 			selectedIds.length === 1
-				? __( 'Delete this block? This cannot be undone.', 'blockvault' )
-				: `${ __( 'Delete', 'blockvault' ) } ${ selectedIds.length } ${ __( 'blocks? This cannot be undone.', 'blockvault' ) }`
+				? __( 'Delete this block? This cannot be undone.', 'perastra-blockvault' )
+				: `${ __( 'Delete', 'perastra-blockvault' ) } ${ selectedIds.length } ${ __( 'blocks? This cannot be undone.', 'perastra-blockvault' ) }`
 		) ) return;
 		setDeleting( true );
 		let deleted = 0;
@@ -60,7 +60,7 @@ const BlockList = memo( function BlockList( { onDuplicate } ) {
 		setBulkMode( false );
 		if ( deleted > 0 ) {
 			createSuccessNotice(
-				`${ deleted } ${ deleted !== 1 ? __( 'blocks', 'blockvault' ) : __( 'block', 'blockvault' ) } ${ __( 'deleted.', 'blockvault' ) }`,
+				`${ deleted } ${ deleted !== 1 ? __( 'blocks', 'perastra-blockvault' ) : __( 'block', 'perastra-blockvault' ) } ${ __( 'deleted.', 'perastra-blockvault' ) }`,
 				{ type: 'snackbar' }
 			);
 		}
@@ -95,11 +95,11 @@ const BlockList = memo( function BlockList( { onDuplicate } ) {
 	if ( blocks.length === 0 && hasFilters ) {
 		return (
 			<div className="blockvault-block-list__empty">
-				<p>{ __( 'No blocks match your filters.', 'blockvault' ) }</p>
+				<p>{ __( 'No blocks match your filters.', 'perastra-blockvault' ) }</p>
 				<p className="blockvault-block-list__hint">
 					{ __(
 						'Try a different search term or category.',
-						'blockvault'
+						'perastra-blockvault'
 					) }
 				</p>
 			</div>
@@ -138,28 +138,28 @@ const BlockList = memo( function BlockList( { onDuplicate } ) {
 					</svg>
 				</div>
 				<p className="blockvault-onboarding__title">
-					{ __( 'Your block library is empty', 'blockvault' ) }
+					{ __( 'Your block library is empty', 'perastra-blockvault' ) }
 				</p>
 				<div className="blockvault-onboarding__steps">
 					<p>
 						<strong>1.</strong>{ ' ' }
 						{ __(
 							'Select one or more blocks in the editor',
-							'blockvault'
+							'perastra-blockvault'
 						) }
 					</p>
 					<p>
 						<strong>2.</strong>{ ' ' }
 						{ __(
 							'Click "Save to Library" above',
-							'blockvault'
+							'perastra-blockvault'
 						) }
 					</p>
 					<p>
 						<strong>3.</strong>{ ' ' }
 						{ __(
 							'Insert saved blocks on any WordPress site',
-							'blockvault'
+							'perastra-blockvault'
 						) }
 					</p>
 				</div>
@@ -179,8 +179,8 @@ const BlockList = memo( function BlockList( { onDuplicate } ) {
 								onClick={ handleSelectAll }
 							>
 								{ selectedIds.length === blocks.length
-									? __( 'Deselect all', 'blockvault' )
-									: __( 'Select all', 'blockvault' ) }
+									? __( 'Deselect all', 'perastra-blockvault' )
+									: __( 'Select all', 'perastra-blockvault' ) }
 							</Button>
 							{ selectedIds.length > 0 && (
 								<Button
@@ -189,7 +189,7 @@ const BlockList = memo( function BlockList( { onDuplicate } ) {
 									isBusy={ deleting }
 									onClick={ handleBulkDelete }
 								>
-									{ `${ __( 'Delete', 'blockvault' ) } (${ selectedIds.length })` }
+									{ `${ __( 'Delete', 'perastra-blockvault' ) } (${ selectedIds.length })` }
 								</Button>
 							) }
 							<Button
@@ -197,7 +197,7 @@ const BlockList = memo( function BlockList( { onDuplicate } ) {
 								size="small"
 								onClick={ () => { setBulkMode( false ); setSelectedIds( [] ); } }
 							>
-								{ __( 'Cancel', 'blockvault' ) }
+								{ __( 'Cancel', 'perastra-blockvault' ) }
 							</Button>
 						</Flex>
 					) : (
@@ -206,7 +206,7 @@ const BlockList = memo( function BlockList( { onDuplicate } ) {
 							size="small"
 							onClick={ () => setBulkMode( true ) }
 						>
-							{ __( 'Select multiple', 'blockvault' ) }
+							{ __( 'Select multiple', 'perastra-blockvault' ) }
 						</Button>
 					) }
 				</div>

@@ -4,16 +4,16 @@
  * real cloud API when configured.
  */
 
-/* global blockvaultSettings */
+/* global perastraBlockvaultSettings */
 
 import * as mock from './mock';
 import * as real from './real';
 
-const STORAGE_KEY = 'blockvault_blocks';
-const MIGRATED_KEY = 'blockvault_migrated';
+const STORAGE_KEY = 'perastra_blockvault_blocks';
+const MIGRATED_KEY = 'perastra_blockvault_migrated';
 
 function isCloudMode() {
-	return !! ( blockvaultSettings?.apiKey );
+	return !! ( perastraBlockvaultSettings?.apiKey );
 }
 
 export function getClient() {

@@ -1,6 +1,6 @@
 <?php
 /**
- * BlockVault uninstall handler.
+ * PerAstra BlockVault uninstall handler.
  *
  * Cleans up all plugin data when the user deletes the plugin
  * via the WordPress admin Plugins page.
@@ -14,13 +14,19 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
 }
 
-// Remove plugin options.
+// Remove current plugin options.
+delete_option( 'perastra_blockvault_api_key' );
+delete_option( 'perastra_blockvault_api_url' );
+delete_option( 'perastra_blockvault_version' );
+
+// Remove any transients.
+delete_transient( 'perastra_blockvault_blocks_cache' );
+delete_transient( 'perastra_blockvault_plan_cache' );
+
+// Remove legacy options from the pre-release slug, in case the user is
+// uninstalling from an earlier install that still had them around.
 delete_option( 'blockvault_api_key' );
 delete_option( 'blockvault_api_url' );
 delete_option( 'blockvault_version' );
-
-// Remove any transients.
 delete_transient( 'blockvault_blocks_cache' );
-
-// Clean up user meta if we add any in the future.
-// delete_metadata( 'user', 0, 'blockvault_preferences', '', true );
+delete_transient( 'blockvault_plan_cache' );
