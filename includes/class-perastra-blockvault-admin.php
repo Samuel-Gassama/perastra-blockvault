@@ -367,8 +367,12 @@ class PerAstra_BlockVault_Admin {
 			wp_send_json_error( __( 'Permission denied.', 'perastra-blockvault' ) );
 		}
 
-		$email    = sanitize_email( $_POST['email'] ?? '' );
-		$password = $_POST['password'] ?? '';
+		// Unslash before sanitizing — WordPress slash-escapes $_POST values
+		// automatically (legacy magic_quotes behavior). The password is sent
+		// to the cloud API as-is for bcrypt comparison, so it must NOT be
+		// HTML-sanitized; we cast to string + unslash only.
+		$email    = sanitize_email( wp_unslash( $_POST['email'] ?? '' ) );
+		$password = is_string( $_POST['password'] ?? null ) ? wp_unslash( $_POST['password'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- passwords must remain byte-exact for bcrypt.
 
 		if ( empty( $email ) || empty( $password ) ) {
 			wp_send_json_error( __( 'Email and password are required.', 'perastra-blockvault' ) );
@@ -429,8 +433,9 @@ class PerAstra_BlockVault_Admin {
 			wp_send_json_error( __( 'Permission denied.', 'perastra-blockvault' ) );
 		}
 
-		$email    = sanitize_email( $_POST['email'] ?? '' );
-		$password = $_POST['password'] ?? '';
+		// Unslash before sanitizing — see ajax_register() for the rationale.
+		$email    = sanitize_email( wp_unslash( $_POST['email'] ?? '' ) );
+		$password = is_string( $_POST['password'] ?? null ) ? wp_unslash( $_POST['password'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- passwords must remain byte-exact for bcrypt.
 
 		if ( empty( $email ) || empty( $password ) ) {
 			wp_send_json_error( __( 'Email and password are required.', 'perastra-blockvault' ) );
