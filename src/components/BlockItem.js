@@ -38,7 +38,7 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 	const [ editCategory, setEditCategory ] = useState( '' );
 
 	const { insertBlocks } = useDispatch( blockEditorStore );
-	const { deleteBlock, updateBlock, toggleFavorite, addBlockToCollection, removeBlockFromCollection } = useDispatch( STORE_NAME );
+	const { deleteBlock, updateBlock, toggleFavorite, syncBlockCollection } = useDispatch( STORE_NAME );
 	const { createSuccessNotice, createErrorNotice, createWarningNotice } =
 		useDispatch( noticesStore );
 
@@ -169,24 +169,12 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 			}
 			await updateBlock( block.id, data );
 
-			// Sync collection membership on paid plans.
-			// Treats the single-select UI as "the collection for this block":
-			// - if the selection differs from current, remove from old collection(s) and add to the new one.
-			// - if the selection is empty, remove from all collections.
+			// Sync collection membership on paid plans. The store action
+			// handles the API diff and finishes with an authoritative
+			// UPDATE_BLOCK so local `collection_ids` always matches the
+			// user's selection — no more stale-filter bugs after editing.
 			if ( plan !== 'free' ) {
-				const currentIds = Array.isArray( block.collection_ids ) ? block.collection_ids : [];
-				const isInSelected = editCollection && currentIds.includes( editCollection );
-
-				if ( ! isInSelected ) {
-					// Remove from any existing collections.
-					for ( const id of currentIds ) {
-						await removeBlockFromCollection( id, block.id );
-					}
-					// Add to the newly selected one (if any).
-					if ( editCollection ) {
-						await addBlockToCollection( editCollection, block.id );
-					}
-				}
+				await syncBlockCollection( block.id, editCollection || null );
 			}
 
 			createSuccessNotice(

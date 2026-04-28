@@ -264,6 +264,60 @@ const store = createReduxStore( STORE_NAME, {
 			};
 		},
 
+		/**
+		 * Sync a block's collection membership to a single target collection
+		 * (or none). Treats collections as a single-select on a block.
+		 *
+		 * 1. Diffs the current `collection_ids` against the target.
+		 * 2. Calls the API to add/remove junction rows.
+		 * 3. Dispatches a definitive UPDATE_BLOCK with the final
+		 *    `collection_ids` so the local state can never drift from
+		 *    the user's intent (even if individual dispatches missed).
+		 */
+		syncBlockCollection( blockId, targetCollectionId ) {
+			return async ( { dispatch, select } ) => {
+				const blocks = select.getBlocks();
+				const current = blocks.find( ( b ) => b.id === blockId );
+				const currentIds = Array.isArray( current?.collection_ids ) ? current.collection_ids : [];
+				const finalIds = targetCollectionId ? [ targetCollectionId ] : [];
+
+				// Already where we want it.
+				if (
+					currentIds.length === finalIds.length &&
+					currentIds.every( ( id ) => finalIds.includes( id ) )
+				) {
+					return;
+				}
+
+				// Remove from any current collection that isn't the target.
+				for ( const id of currentIds ) {
+					if ( id === targetCollectionId ) continue;
+					try {
+						await api.removeBlockFromCollection( id, blockId );
+					} catch {
+						// Don't bail the whole sync if one removal fails —
+						// proceed and the final dispatch below will keep
+						// local state aligned with user intent.
+					}
+				}
+
+				// Add to the target if not already in it.
+				if ( targetCollectionId && ! currentIds.includes( targetCollectionId ) ) {
+					try {
+						await api.addBlockToCollection( targetCollectionId, blockId );
+					} catch {
+						// Same reasoning as above.
+					}
+				}
+
+				// Final, authoritative state for this block.
+				dispatch( {
+					type: 'UPDATE_BLOCK',
+					block: { id: blockId, collection_ids: finalIds },
+				} );
+			};
+		},
+
 		setCollectionFilter( collectionFilter ) {
 			return { type: 'SET_COLLECTION_FILTER', collectionFilter };
 		},
