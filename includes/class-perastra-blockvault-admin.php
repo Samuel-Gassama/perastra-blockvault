@@ -15,7 +15,7 @@ class PerAstra_BlockVault_Admin {
 	public static function init() {
 		add_action( 'admin_menu', array( __CLASS__, 'add_menu' ) );
 		add_action( 'admin_init', array( __CLASS__, 'register_settings' ) );
-		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_admin_styles' ) );
+		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_admin_assets' ) );
 		add_action( 'wp_ajax_perastra_blockvault_register', array( __CLASS__, 'ajax_register' ) );
 		add_action( 'wp_ajax_perastra_blockvault_disconnect', array( __CLASS__, 'ajax_disconnect' ) );
 		add_action( 'wp_ajax_perastra_blockvault_login', array( __CLASS__, 'ajax_login' ) );
@@ -52,12 +52,56 @@ class PerAstra_BlockVault_Admin {
 		} );
 	}
 
-	public static function enqueue_admin_styles( $hook ) {
+	public static function enqueue_admin_assets( $hook ) {
 		if ( 'toplevel_page_perastra-blockvault' !== $hook ) {
 			return;
 		}
 
+		// CSS — attached as an inline style on the core wp-admin handle so
+		// the styles load only on this settings page.
 		wp_add_inline_style( 'wp-admin', self::get_admin_css() );
+
+		// JS — registered as a separate file under assets/js/admin.js and
+		// localized with all the dynamic data (nonces + translated strings)
+		// that the script needs. WordPress.org guidelines require enqueueing
+		// scripts via wp_enqueue_script() rather than printing inline
+		// <script> tags in the page markup.
+		wp_register_script(
+			'perastra-blockvault-admin',
+			plugin_dir_url( dirname( __FILE__ ) ) . 'assets/js/admin.js',
+			array(),
+			PERASTRA_BLOCKVAULT_VERSION,
+			true
+		);
+
+		wp_localize_script(
+			'perastra-blockvault-admin',
+			'perAstraBlockVaultAdmin',
+			array(
+				'ajaxurl' => admin_url( 'admin-ajax.php' ),
+				'nonces'  => array(
+					'register'   => wp_create_nonce( 'perastra_blockvault_register' ),
+					'login'      => wp_create_nonce( 'perastra_blockvault_login' ),
+					'disconnect' => wp_create_nonce( 'perastra_blockvault_disconnect' ),
+				),
+				'i18n'    => array(
+					'disconnectConfirm' => __( 'Disconnect this site from your BlockVault account? Your cloud blocks will not be deleted.', 'perastra-blockvault' ),
+					'requiredFields'    => __( 'Email and password are required.', 'perastra-blockvault' ),
+					'passwordTooShort'  => __( 'Password must be at least 8 characters.', 'perastra-blockvault' ),
+					'connectionError'   => __( 'Connection error. Try again.', 'perastra-blockvault' ),
+					'loggingIn'         => __( 'Logging in...', 'perastra-blockvault' ),
+					'loginSuccess'      => __( 'Logged in! API key saved. Reloading...', 'perastra-blockvault' ),
+					'loginInvalid'      => __( 'Invalid email or password.', 'perastra-blockvault' ),
+					'loginButton'       => __( 'Log In & Get API Key', 'perastra-blockvault' ),
+					'creatingAccount'   => __( 'Creating account...', 'perastra-blockvault' ),
+					'registerSuccess'   => __( 'Account created! API key saved. Reloading...', 'perastra-blockvault' ),
+					'registerFailed'    => __( 'Registration failed. Try again.', 'perastra-blockvault' ),
+					'registerButton'    => __( 'Create Account & Get API Key', 'perastra-blockvault' ),
+				),
+			)
+		);
+
+		wp_enqueue_script( 'perastra-blockvault-admin' );
 	}
 
 	public static function render_settings_page() {
@@ -307,141 +351,10 @@ class PerAstra_BlockVault_Admin {
 			</div>
 		</div>
 
-		<script>
-		(function() {
-			// Toggle API key visibility by swapping input type between
-			// password (masked by the browser — readable via DOM but not
-			// rendered on screen) and text.
-			var toggleBtn = document.querySelector('.blockvault-admin__toggle-key');
-			var keyInput = document.getElementById('perastra_blockvault_api_key');
-			if (toggleBtn && keyInput) {
-				toggleBtn.addEventListener('click', function() {
-					var icon = toggleBtn.querySelector('.dashicons');
-					if (keyInput.type === 'password') {
-						keyInput.type = 'text';
-						icon.className = 'dashicons dashicons-hidden';
-					} else {
-						keyInput.type = 'password';
-						icon.className = 'dashicons dashicons-visibility';
-					}
-				});
-			}
-
-			// Copy API key
-			var copyBtn = document.querySelector('.blockvault-admin__copy-key');
-			if (copyBtn) {
-				copyBtn.addEventListener('click', function() {
-					var input = document.getElementById('perastra_blockvault_api_key');
-					navigator.clipboard.writeText(input.value).then(function() {
-						var icon = copyBtn.querySelector('.dashicons');
-						icon.className = 'dashicons dashicons-yes';
-						setTimeout(function() { icon.className = 'dashicons dashicons-clipboard'; }, 1500);
-					});
-				});
-			}
-
-			// Disconnect
-			var disconnectBtn = document.querySelector('.blockvault-admin__disconnect');
-			if (disconnectBtn) {
-				disconnectBtn.addEventListener('click', function() {
-					if (!confirm('<?php echo esc_js( __( 'Disconnect this site from your BlockVault account? Your cloud blocks will not be deleted.', 'perastra-blockvault' ) ); ?>')) return;
-					fetch(ajaxurl, {
-						method: 'POST',
-						headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-						body: 'action=perastra_blockvault_disconnect&_wpnonce=<?php echo esc_js( wp_create_nonce( 'perastra_blockvault_disconnect' ) ); ?>'
-					}).then(function(r) { return r.json(); }).then(function() {
-						window.location.reload();
-					});
-				});
-			}
-
-			// Auth tabs
-			document.querySelectorAll('.blockvault-admin__auth-tab').forEach(function(tab) {
-				tab.addEventListener('click', function() {
-					document.querySelectorAll('.blockvault-admin__auth-tab').forEach(function(t) { t.classList.remove('active'); });
-					document.querySelectorAll('.blockvault-admin__auth-panel').forEach(function(p) { p.classList.remove('active'); });
-					tab.classList.add('active');
-					document.querySelector('[data-panel="' + tab.dataset.tab + '"]').classList.add('active');
-				});
-			});
-
-			// Login
-			var loginBtn = document.querySelector('.blockvault-admin__login-btn');
-			if (loginBtn) {
-				loginBtn.addEventListener('click', function() {
-					var email = document.getElementById('bv-login-email').value.trim();
-					var pass = document.getElementById('bv-login-password').value;
-					var result = document.querySelector('.blockvault-admin__login-result');
-					if (!email || !pass) { result.style.display='block'; result.className='blockvault-admin__login-result notice notice-error'; result.textContent='<?php echo esc_js( __( 'Email and password are required.', 'perastra-blockvault' ) ); ?>'; return; }
-					loginBtn.disabled = true;
-					loginBtn.textContent = '<?php echo esc_js( __( 'Logging in...', 'perastra-blockvault' ) ); ?>';
-					fetch(ajaxurl, {
-						method: 'POST',
-						headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-						body: 'action=perastra_blockvault_login&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(pass) + '&_wpnonce=<?php echo esc_js( wp_create_nonce( 'perastra_blockvault_login' ) ); ?>'
-					}).then(function(r) { return r.json(); }).then(function(data) {
-						if (data.success) {
-							result.style.display='block';
-							result.className='blockvault-admin__login-result notice notice-success';
-							result.textContent='<?php echo esc_js( __( 'Logged in! API key saved. Reloading...', 'perastra-blockvault' ) ); ?>';
-							setTimeout(function() { window.location.reload(); }, 1500);
-						} else {
-							result.style.display='block';
-							result.className='blockvault-admin__login-result notice notice-error';
-							result.textContent = data.data || '<?php echo esc_js( __( 'Invalid email or password.', 'perastra-blockvault' ) ); ?>';
-							loginBtn.disabled = false;
-							loginBtn.textContent = '<?php echo esc_js( __( 'Log In & Get API Key', 'perastra-blockvault' ) ); ?>';
-						}
-					}).catch(function() {
-						result.style.display='block';
-						result.className='blockvault-admin__login-result notice notice-error';
-						result.textContent='<?php echo esc_js( __( 'Connection error. Try again.', 'perastra-blockvault' ) ); ?>';
-						loginBtn.disabled = false;
-						loginBtn.textContent = '<?php echo esc_js( __( 'Log In & Get API Key', 'perastra-blockvault' ) ); ?>';
-					});
-				});
-			}
-
-			// Register
-			var registerBtn = document.querySelector('.blockvault-admin__register-btn');
-			if (registerBtn) {
-				registerBtn.addEventListener('click', function() {
-					var email = document.getElementById('bv-register-email').value.trim();
-					var pass = document.getElementById('bv-register-password').value;
-					var result = document.querySelector('.blockvault-admin__register-result');
-					if (!email || !pass) { result.style.display='block'; result.className='blockvault-admin__register-result notice notice-error'; result.textContent='<?php echo esc_js( __( 'Email and password are required.', 'perastra-blockvault' ) ); ?>'; return; }
-					if (pass.length < 8) { result.style.display='block'; result.className='blockvault-admin__register-result notice notice-error'; result.textContent='<?php echo esc_js( __( 'Password must be at least 8 characters.', 'perastra-blockvault' ) ); ?>'; return; }
-					registerBtn.disabled = true;
-					registerBtn.textContent = '<?php echo esc_js( __( 'Creating account...', 'perastra-blockvault' ) ); ?>';
-					fetch(ajaxurl, {
-						method: 'POST',
-						headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-						body: 'action=perastra_blockvault_register&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(pass) + '&_wpnonce=<?php echo esc_js( wp_create_nonce( 'perastra_blockvault_register' ) ); ?>'
-					}).then(function(r) { return r.json(); }).then(function(data) {
-						if (data.success) {
-							result.style.display='block';
-							result.className='blockvault-admin__register-result notice notice-success';
-							result.textContent='<?php echo esc_js( __( 'Account created! API key saved. Reloading...', 'perastra-blockvault' ) ); ?>';
-							setTimeout(function() { window.location.reload(); }, 1500);
-						} else {
-							result.style.display='block';
-							result.className='blockvault-admin__register-result notice notice-error';
-							result.textContent = data.data || '<?php echo esc_js( __( 'Registration failed. Try again.', 'perastra-blockvault' ) ); ?>';
-							registerBtn.disabled = false;
-							registerBtn.textContent = '<?php echo esc_js( __( 'Create Account & Get API Key', 'perastra-blockvault' ) ); ?>';
-						}
-					}).catch(function() {
-						result.style.display='block';
-						result.className='blockvault-admin__register-result notice notice-error';
-						result.textContent='<?php echo esc_js( __( 'Connection error. Try again.', 'perastra-blockvault' ) ); ?>';
-						registerBtn.disabled = false;
-						registerBtn.textContent = '<?php echo esc_js( __( 'Create Account & Get API Key', 'perastra-blockvault' ) ); ?>';
-					});
-				});
-			}
-		})();
-		</script>
 		<?php
+		// Page-level interaction logic (toggle API key visibility, copy,
+		// disconnect, auth tabs, login, register) lives in
+		// assets/js/admin.js, registered + enqueued by enqueue_admin_assets().
 	}
 
 	/**

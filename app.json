@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "perastra-blockvault",
+    "slug": "perastra-blockvault",
+    "version": "1.1.0",
+    "description": "PerAstra BlockVault — a personal cloud library for Gutenberg blocks.",
+    "sdkVersion": "50.0.0",
+    "platforms": []
+  }
+}
