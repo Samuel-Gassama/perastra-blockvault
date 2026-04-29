@@ -61,7 +61,7 @@ When an API key is configured, this plugin connects to the BlockVault cloud API 
 
 No data is sent when using local mode (no API key configured).
 
-* BlockVault cloud API endpoint: [https://blockvault-api-production.up.railway.app](https://blockvault-api-production.up.railway.app)
+* BlockVault cloud API endpoint: [https://api.block-vault.com](https://api.block-vault.com)
 * Privacy Policy: [https://block-vault.com/privacy](https://block-vault.com/privacy)
 * Terms of Service: [https://block-vault.com/terms](https://block-vault.com/terms)
 
