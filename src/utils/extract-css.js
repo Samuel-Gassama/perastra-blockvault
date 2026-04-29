@@ -65,6 +65,26 @@ function collectClassesFromMarkup( markup ) {
 }
 
 /**
+ * Determine if a target URL has the same origin as the configured site URL.
+ * Defense against the CSS extractor following arbitrary `<link rel=stylesheet>`
+ * URLs to internal/private network endpoints (SSRF) or attacker-controlled
+ * remote stylesheets.
+ */
+function isSameOriginAsSite( targetUrl, siteUrl ) {
+	try {
+		const target = new URL( targetUrl, siteUrl );
+		const site = new URL( siteUrl );
+		// Only allow http(s) — skip file:, javascript:, etc.
+		if ( target.protocol !== 'http:' && target.protocol !== 'https:' ) {
+			return false;
+		}
+		return target.origin === site.origin;
+	} catch {
+		return false;
+	}
+}
+
+/**
  * Fetch the frontend page and extract all stylesheet URLs and inline styles.
  */
 async function fetchFrontendStyles() {
@@ -87,7 +107,13 @@ async function fetchFrontendStyles() {
 		// Fallback to site URL.
 	}
 
-
+	// Final SSRF check on the resolved page URL — must be same-origin as
+	// the WP site itself. A malicious permalink filter could otherwise
+	// redirect this fetch at internal/private IPs (AWS metadata, etc.)
+	// from inside the admin's authenticated browser session.
+	if ( ! isSameOriginAsSite( pageUrl, siteUrl ) ) {
+		return { stylesheetUrls: [], inlineStyles: [] };
+	}
 
 	try {
 		const response = await fetch( pageUrl, {
@@ -99,11 +125,16 @@ async function fetchFrontendStyles() {
 		const parser = new DOMParser();
 		const doc = parser.parseFromString( html, 'text/html' );
 
-		// Get all <link rel="stylesheet"> URLs.
+		// Get all <link rel="stylesheet"> URLs — same-origin only.
 		const links = doc.querySelectorAll( 'link[rel="stylesheet"]' );
 		const stylesheetUrls = Array.from( links )
 			.map( ( link ) => link.href )
-			.filter( ( href ) => href && ! href.includes( 'wp-admin' ) );
+			.filter(
+				( href ) =>
+					href &&
+					! href.includes( 'wp-admin' ) &&
+					isSameOriginAsSite( href, siteUrl )
+			);
 
 		// Get all inline <style> content.
 		const styleTags = doc.querySelectorAll( 'style' );
@@ -121,9 +152,14 @@ async function fetchFrontendStyles() {
 }
 
 /**
- * Fetch a stylesheet and return its CSS text.
+ * Fetch a stylesheet and return its CSS text. Same-origin enforcement is
+ * already done by the caller; this is a second-line check.
  */
 async function fetchStylesheet( url ) {
+	const siteUrl = perastraBlockvaultSettings?.siteUrl || '';
+	if ( ! isSameOriginAsSite( url, siteUrl ) ) {
+		return '';
+	}
 	try {
 		const response = await fetch( url, { credentials: 'same-origin' } );
 		if ( ! response.ok ) return '';

@@ -4,7 +4,7 @@ Tags: gutenberg, blocks, library, patterns, cloud
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.1.1
+Stable tag: 1.2.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -154,6 +154,12 @@ PerAstra BlockVault is developed and maintained by PerAstra. The BlockVault clou
 
 == Changelog ==
 
+= 1.2.0 =
+* Security: defensive sanitization of inserted block CSS so a saved style cannot escape its `<style>` element on insertion.
+* Security: API URL setting is now restricted to the official api.block-vault.com endpoint (or a wp-config-defined override) so a malicious paste cannot redirect API traffic.
+* Security: CSS auto-extraction now only follows same-origin stylesheet URLs, preventing the editor from being used to fetch arbitrary remote URLs.
+* Internal: aligns with paired API security release that adds full server-side block sanitization, license tampering protections on the Paddle webhook, and granular per-API-key rate limiting.
+
 = 1.1.1 =
 * Cloud API endpoint moved to the dedicated `api.block-vault.com` domain (previously a Railway-managed URL). Existing installs are migrated automatically on update.
 * Internal: small refactor of the block-collection sync logic so collection filters always reflect the user's latest selection without needing a refresh.
@@ -192,6 +198,9 @@ PerAstra BlockVault is developed and maintained by PerAstra. The BlockVault clou
 * Proper activation, deactivation, and uninstall cleanup
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+Security release. Strongly recommended for all users.
 
 = 1.1.1 =
 Migrates the cloud API endpoint to api.block-vault.com. Update is automatic — no user action required.

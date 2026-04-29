@@ -42,7 +42,7 @@ class PerAstra_BlockVault_Admin {
 
 		register_setting( 'perastra_blockvault_settings', 'perastra_blockvault_api_url', array(
 			'type'              => 'string',
-			'sanitize_callback' => 'esc_url_raw',
+			'sanitize_callback' => array( __CLASS__, 'sanitize_api_url' ),
 			'default'           => self::API_URL_DEFAULT,
 		) );
 
@@ -50,6 +50,58 @@ class PerAstra_BlockVault_Admin {
 		add_action( 'update_option_perastra_blockvault_api_key', function() {
 			delete_transient( 'perastra_blockvault_plan_cache' );
 		} );
+	}
+
+	/**
+	 * Validate the API URL setting against an allowlist.
+	 *
+	 * The plugin sends API keys + login passwords to whatever URL is in
+	 * this option. An attacker who tricks an admin into pasting a malicious
+	 * "support tool" URL would otherwise capture credentials. We restrict
+	 * to:
+	 *   - the production domain (api.block-vault.com)
+	 *   - localhost (development)
+	 *   - any URL pre-set via the PERASTRA_BLOCKVAULT_API_URL constant in
+	 *     wp-config.php (for staging environments)
+	 *
+	 * Anything else falls back to the default.
+	 */
+	public static function sanitize_api_url( $value ) {
+		$value = esc_url_raw( (string) $value );
+		if ( empty( $value ) ) {
+			return self::API_URL_DEFAULT;
+		}
+
+		// Allowed via wp-config constant override.
+		if ( defined( 'PERASTRA_BLOCKVAULT_API_URL' ) && PERASTRA_BLOCKVAULT_API_URL === $value ) {
+			return $value;
+		}
+
+		$parsed = wp_parse_url( $value );
+		if ( ! $parsed || empty( $parsed['host'] ) || empty( $parsed['scheme'] ) ) {
+			return self::API_URL_DEFAULT;
+		}
+
+		// HTTPS required for the production domain.
+		$host = strtolower( $parsed['host'] );
+		$scheme = strtolower( $parsed['scheme'] );
+
+		$allowed_hosts = array(
+			'api.block-vault.com',
+			'localhost',
+			'127.0.0.1',
+		);
+
+		if ( ! in_array( $host, $allowed_hosts, true ) ) {
+			return self::API_URL_DEFAULT;
+		}
+
+		// Production must be HTTPS. Localhost can be either.
+		if ( $host === 'api.block-vault.com' && $scheme !== 'https' ) {
+			return self::API_URL_DEFAULT;
+		}
+
+		return $value;
 	}
 
 	public static function enqueue_admin_assets( $hook ) {

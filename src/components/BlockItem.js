@@ -67,18 +67,33 @@ const BlockItem = memo( function BlockItem( { block, selectable, selected, onTog
 			// 1. As a <style> tag in the editor for immediate preview.
 			// 2. As a Custom HTML block for the frontend.
 			if ( block.css ) {
+				// Defensive sanitization in case the API ever serves
+				// untrusted content (e.g. shared/team blocks). Strip:
+				// - </style and similar tag-breakouts
+				// - */ which would break the leading CSS comment context
+				// We DON'T trust string interpolation alone — sanitize too.
+				const safeCss = String( block.css )
+					.replace( /<\/?\s*(style|script|iframe|object|embed)/gi, '' )
+					.replace( /\*\//g, '' );
+				const safeName = String( block.name || '' )
+					.replace( /<\/?\s*(style|script|iframe|object|embed)/gi, '' )
+					.replace( /\*\//g, '' )
+					.replace( /[\r\n]+/g, ' ' );
+
 				const styleBlock = createBlock( 'core/html', {
-					content: `<style>/* BlockVault: ${ block.name } */\n${ block.css }\n</style>`,
-					metadata: { name: `${ block.name } — CSS` },
+					content: `<style>/* BlockVault: ${ safeName } */\n${ safeCss }\n</style>`,
+					metadata: { name: `${ safeName } — CSS` },
 				} );
 				insertBlocks( [ styleBlock, ...parsed ] );
 
 				// Also inject into editor head for immediate preview.
+				// textContent is safe vs HTML injection — browser treats it
+				// purely as a CSS string.
 				const styleId = `blockvault-css-${ block.id }`;
 				if ( ! document.getElementById( styleId ) ) {
 					const style = document.createElement( 'style' );
 					style.id = styleId;
-					style.textContent = block.css;
+					style.textContent = safeCss;
 					document.head.appendChild( style );
 				}
 			} else {
