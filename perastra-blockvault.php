@@ -3,7 +3,7 @@
  * Plugin Name:       PerAstra BlockVault
  * Plugin URI:        https://block-vault.com
  * Description:       A personal cloud library for Gutenberg blocks. Save blocks from one site, insert them on any other. By PerAstra.
- * Version:           1.1.0
+ * Version:           1.1.1
  * Author:            PerAstra
  * Author URI:        https://perastra.dev
  * License:           GPL-2.0-or-later
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'PERASTRA_BLOCKVAULT_VERSION', '1.1.0' );
+define( 'PERASTRA_BLOCKVAULT_VERSION', '1.1.1' );
 define( 'PERASTRA_BLOCKVAULT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PERASTRA_BLOCKVAULT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'PERASTRA_BLOCKVAULT_PLUGIN_FILE', __FILE__ );
@@ -32,12 +32,44 @@ function perastra_blockvault_activate() {
 	// Migrate legacy options from earlier pre-release (blockvault_*) if they exist.
 	perastra_blockvault_migrate_legacy_options();
 
+	// Migrate stored API URL from the old Railway default to the new
+	// api.block-vault.com domain (1.1.0 → 1.1.1).
+	perastra_blockvault_migrate_api_url();
+
 	// Set default options if they don't exist.
 	add_option( 'perastra_blockvault_api_key', '' );
-	add_option( 'perastra_blockvault_api_url', 'https://blockvault-api-production.up.railway.app' );
+	add_option( 'perastra_blockvault_api_url', 'https://api.block-vault.com' );
 	add_option( 'perastra_blockvault_version', PERASTRA_BLOCKVAULT_VERSION );
 }
 register_activation_hook( __FILE__, 'perastra_blockvault_activate' );
+
+/**
+ * Plugins update silently (no activation hook fires on auto-update).
+ * Run our migrations on every load if the stored version is older than the
+ * code version. This is cheap (a few get_option calls) and idempotent.
+ */
+function perastra_blockvault_maybe_upgrade() {
+	$stored = get_option( 'perastra_blockvault_version' );
+	if ( $stored === PERASTRA_BLOCKVAULT_VERSION ) {
+		return;
+	}
+	perastra_blockvault_migrate_legacy_options();
+	perastra_blockvault_migrate_api_url();
+	update_option( 'perastra_blockvault_version', PERASTRA_BLOCKVAULT_VERSION );
+}
+add_action( 'admin_init', 'perastra_blockvault_maybe_upgrade' );
+
+/**
+ * If the user is still pointing at the old Railway default URL, switch them
+ * to the new custom domain. Skips users who set a custom URL (e.g. for
+ * staging) — those values are preserved.
+ */
+function perastra_blockvault_migrate_api_url() {
+	$current = get_option( 'perastra_blockvault_api_url' );
+	if ( $current === 'https://blockvault-api-production.up.railway.app' ) {
+		update_option( 'perastra_blockvault_api_url', 'https://api.block-vault.com' );
+	}
+}
 
 /**
  * Migrate options from the pre-release slug (blockvault) to the new prefix.
@@ -130,7 +162,7 @@ function perastra_blockvault_enqueue_editor_assets() {
 	if ( ! empty( $api_key ) ) {
 		$cached = get_transient( 'perastra_blockvault_plan_cache' );
 		if ( false === $cached ) {
-			$api_url  = trailingslashit( get_option( 'perastra_blockvault_api_url', 'https://blockvault-api-production.up.railway.app' ) );
+			$api_url  = trailingslashit( get_option( 'perastra_blockvault_api_url', 'https://api.block-vault.com' ) );
 			$response = wp_remote_get( $api_url . 'auth/account', array(
 				'headers' => array( 'X-API-Key' => $api_key ),
 				'timeout' => 5,
@@ -149,7 +181,7 @@ function perastra_blockvault_enqueue_editor_assets() {
 
 	wp_localize_script( 'perastra-blockvault-editor', 'perastraBlockvaultSettings', array(
 		'apiKey'  => current_user_can( 'manage_options' ) ? $api_key : '',
-		'apiUrl'  => get_option( 'perastra_blockvault_api_url', 'https://blockvault-api-production.up.railway.app' ),
+		'apiUrl'  => get_option( 'perastra_blockvault_api_url', 'https://api.block-vault.com' ),
 		'siteUrl' => site_url(),
 		'plan'    => $plan,
 		'restUrl' => rest_url( 'perastra-blockvault/v1/' ),

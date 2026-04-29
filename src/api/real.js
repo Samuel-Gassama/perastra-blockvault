@@ -17,7 +17,7 @@ function getHeaders() {
 }
 
 function getBaseUrl() {
-	return ( perastraBlockvaultSettings?.apiUrl || 'https://blockvault-api-production.up.railway.app' ).replace(
+	return ( perastraBlockvaultSettings?.apiUrl || 'https://api.block-vault.com' ).replace(
 		/\/$/,
 		''
 	);

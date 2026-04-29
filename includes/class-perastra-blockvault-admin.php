@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class PerAstra_BlockVault_Admin {
 
-	const API_URL_DEFAULT = 'https://blockvault-api-production.up.railway.app';
+	const API_URL_DEFAULT = 'https://api.block-vault.com';
 	const SITE_URL        = 'https://block-vault.com';
 
 	public static function init() {

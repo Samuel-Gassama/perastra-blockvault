@@ -4,7 +4,7 @@ Tags: gutenberg, blocks, library, patterns, cloud
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -154,6 +154,10 @@ PerAstra BlockVault is developed and maintained by PerAstra. The BlockVault clou
 
 == Changelog ==
 
+= 1.1.1 =
+* Cloud API endpoint moved to the dedicated `api.block-vault.com` domain (previously a Railway-managed URL). Existing installs are migrated automatically on update.
+* Internal: small refactor of the block-collection sync logic so collection filters always reflect the user's latest selection without needing a refresh.
+
 = 1.1.0 =
 * New: Favorites — pin your most-used blocks to the top (Solo plan and up).
 * New: Collections — group related blocks into named sets, assign blocks from the sidebar or the edit form (Solo plan and up).
@@ -188,6 +192,9 @@ PerAstra BlockVault is developed and maintained by PerAstra. The BlockVault clou
 * Proper activation, deactivation, and uninstall cleanup
 
 == Upgrade Notice ==
+
+= 1.1.1 =
+Migrates the cloud API endpoint to api.block-vault.com. Update is automatic — no user action required.
 
 = 1.1.0 =
 Major feature release: favorites, collections, inline editing, bulk actions, notes, and opt-in CSS capture. Plugin has been renamed to PerAstra BlockVault.

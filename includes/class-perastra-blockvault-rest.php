@@ -91,7 +91,7 @@ class PerAstra_BlockVault_REST {
 			), 200 );
 		}
 
-		$api_url = trailingslashit( get_option( 'perastra_blockvault_api_url', 'https://blockvault-api-production.up.railway.app' ) );
+		$api_url = trailingslashit( get_option( 'perastra_blockvault_api_url', 'https://api.block-vault.com' ) );
 
 		$response = wp_remote_get( $api_url . 'blocks', array(
 			'headers' => self::get_api_headers(),
@@ -114,7 +114,7 @@ class PerAstra_BlockVault_REST {
 			), 200 );
 		}
 
-		$api_url = trailingslashit( get_option( 'perastra_blockvault_api_url', 'https://blockvault-api-production.up.railway.app' ) );
+		$api_url = trailingslashit( get_option( 'perastra_blockvault_api_url', 'https://api.block-vault.com' ) );
 
 		$response = wp_remote_post( $api_url . 'blocks', array(
 			'headers' => self::get_api_headers(),
@@ -142,7 +142,7 @@ class PerAstra_BlockVault_REST {
 			), 200 );
 		}
 
-		$api_url = trailingslashit( get_option( 'perastra_blockvault_api_url', 'https://blockvault-api-production.up.railway.app' ) );
+		$api_url = trailingslashit( get_option( 'perastra_blockvault_api_url', 'https://api.block-vault.com' ) );
 
 		$response = wp_remote_request( $api_url . 'blocks/' . rawurlencode( $request->get_param( 'id' ) ), array(
 			'method'  => 'DELETE',
