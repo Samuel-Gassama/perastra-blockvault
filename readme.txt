@@ -140,6 +140,22 @@ Images are saved as URLs. When inserting on a different site, you may need to re
 
 Team sharing is available on the Agency plan. Free and Solo plans are personal libraries.
 
+= How is BlockVault different from block-pack plugins like Ultimate Addons for Gutenberg, Kadence Blocks, or GenerateBlocks? =
+
+Those plugins add new block types (Info Box, Counter, Pricing Table, etc.) to the Gutenberg inserter. BlockVault doesn't add new blocks — it saves and syncs the compositions you build. The two are complementary: you build a hero section using UAG, Kadence, or core blocks, then save that composition to your BlockVault library and insert it on any other WordPress site in one click. BlockVault works alongside any block-pack plugin.
+
+= How is BlockVault different from WordPress's built-in Reusable Blocks (now called Synced Patterns)? =
+
+Built-in Reusable Blocks are stored in the database of one WordPress site. They cannot be moved to a different WordPress install without exporting and importing. BlockVault stores your blocks in a personal cloud library tied to your account, so you can insert the same block on any WordPress site that has the plugin connected to your account. Built-in Reusable Blocks also "sync" any edit back to every instance, while BlockVault inserts a fresh copy that you're free to customize per-site.
+
+= How is BlockVault different from WordPress Multisite? =
+
+Multisite lets you run many WordPress sites from one installation, sharing core, themes, and plugins. It's powerful for university networks or media chains, but invasive to set up and overkill for freelance work where each client site lives on its own hosting account, its own domain, and often its own theme. BlockVault works on any standard WordPress install — no Multisite required. Your library lives in the cloud, not inside any one WP install.
+
+= Does BlockVault work with my page builder (Elementor, Bricks, Beaver Builder, Divi, etc.)? =
+
+BlockVault is built specifically for the Gutenberg block editor (the WordPress core editor). Page builders like Elementor and Divi use their own internal data formats, not Gutenberg block markup, so blocks built inside those builders cannot be saved through BlockVault. If you use the Gutenberg editor (with or without additional block plugins like UAG, Kadence, GenerateBlocks, or CoBlocks), BlockVault works.
+
 = Who makes this plugin? =
 
 PerAstra BlockVault is developed and maintained by PerAstra. The BlockVault cloud service is operated by PerAstra.
