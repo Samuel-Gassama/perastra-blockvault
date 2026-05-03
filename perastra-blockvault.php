@@ -3,7 +3,7 @@
  * Plugin Name:       PerAstra BlockVault
  * Plugin URI:        https://block-vault.com
  * Description:       A personal cloud library for Gutenberg blocks. Save blocks from one site, insert them on any other. By PerAstra.
- * Version:           1.2.0
+ * Version:           1.2.1
  * Author:            PerAstra
  * Author URI:        https://perastra.dev
  * License:           GPL-2.0-or-later
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'PERASTRA_BLOCKVAULT_VERSION', '1.2.0' );
+define( 'PERASTRA_BLOCKVAULT_VERSION', '1.2.1' );
 define( 'PERASTRA_BLOCKVAULT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PERASTRA_BLOCKVAULT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'PERASTRA_BLOCKVAULT_PLUGIN_FILE', __FILE__ );

@@ -1,18 +1,20 @@
-=== PerAstra BlockVault ===
+=== PerAstra BlockVault – Cloud Block Library for Gutenberg ===
 Contributors: samuelgassama
-Tags: gutenberg, blocks, library, patterns, cloud
+Tags: gutenberg, blocks, block library, reusable blocks, block patterns
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-A personal cloud library for Gutenberg blocks. Save blocks from one site, insert them on any other. By PerAstra.
+Save Gutenberg blocks to a personal cloud library and insert them on any WordPress site. A block manager for freelancers and agencies who reuse the same components across client sites.
 
 == Description ==
 
-PerAstra BlockVault lets WordPress freelancers and agencies save Gutenberg blocks and sections to a personal cloud library, then insert them on any WordPress site in one click.
+Save Gutenberg blocks to a personal cloud library and insert them on any WordPress site. PerAstra BlockVault is a block manager for freelancers and agencies who reuse the same components across client sites.
+
+Stop rebuilding the same hero sections, CTAs, pricing tables, and testimonials from scratch on every project. Save once, insert anywhere — no Multisite required.
 
 **Stop rebuilding the same sections from scratch on every client site.**
 
@@ -154,6 +156,9 @@ PerAstra BlockVault is developed and maintained by PerAstra. The BlockVault clou
 
 == Changelog ==
 
+= 1.2.1 =
+* SEO and discoverability improvements: clearer plugin title and description focused on search intent (no functional changes).
+
 = 1.2.0 =
 * Security: defensive sanitization of inserted block CSS so a saved style cannot escape its `<style>` element on insertion.
 * Security: API URL setting is now restricted to the official api.block-vault.com endpoint (or a wp-config-defined override) so a malicious paste cannot redirect API traffic.
@@ -198,6 +203,9 @@ PerAstra BlockVault is developed and maintained by PerAstra. The BlockVault clou
 * Proper activation, deactivation, and uninstall cleanup
 
 == Upgrade Notice ==
+
+= 1.2.1 =
+Title and description tweaks for better discoverability. Safe to update.
 
 = 1.2.0 =
 Security release. Strongly recommended for all users.
